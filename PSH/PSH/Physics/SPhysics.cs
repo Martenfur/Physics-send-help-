@@ -23,15 +23,23 @@ namespace PSH.Physics
 
 		public override void FixedUpdate(List<Component> components)
 		{
-			for(var i = 0; i < components.Count; i += 1)
+
+			
+			for (var i = 0; i < components.Count; i += 1)
 			{
 				var physics = (CPhysics)components[i];
 
-				var position = physics.Owner.GetComponent<CPosition>();
+				//var position = physics.Owner.GetComponent<CPosition>();
+				for (var k = 0; k < components.Count; k += 1)
+				{
+					if (i == k)
+					{
+						continue;
+					}
+					var otherPhysics = (CPhysics)components[k];
 
-				position.Position += TimeKeeper.GlobalTime(physics.Speed);
-
-				physics.Collider.Position = position.Position;
+					ResolveCollision(physics, otherPhysics);
+				}
 			}
 
 			for (var i = 0; i < components.Count; i += 1)
@@ -40,87 +48,77 @@ namespace PSH.Physics
 
 				var position = physics.Owner.GetComponent<CPosition>();
 
-				if (GetFirstCollision(physics, components) != null)
+				position.Position += TimeKeeper.GlobalTime(physics.Speed);
+
+				if (position.Position.Y > 500)
 				{
-					var delta = position.Position - position.OldPosition;
-
-					var xDelta = new Vector2(delta.X, 0);
-					var yDelta = new Vector2(0, delta.Y);
-
-
-					if (MoveOutside(yDelta, physics, components))
-					{
-						position.Position = physics.Collider.Position;
-					}
-					else
-					{
-						if (MoveOutside(xDelta, physics, components))
-						{
-							position.Position = physics.Collider.Position;
-						}
-						else
-						{
-							MoveOutside(delta, physics, components, false);
-							
-							position.Position = physics.Collider.Position;
-							
-						}
-					}
-
-
+					position.Position.Y = 500;
 				}
 
+				physics.Collider.Position = position.Position;
 			}
+
+
+
+
+
+
+
 		}
 
-		bool MoveOutside(Vector2 delta, CPhysics physics, List<Component> components, bool resetPosition = true)
+
+		void ResolveCollision1(CPhysics obj1, CPhysics obj2)
 		{
-			var e = -delta.GetSafeNormalize();
+			var collision = CollisionSystem.CheckCollision(obj1.Collider, obj2.Collider);
 
-			var oldPosition = physics.Collider.Position;
-
-			for (var i = 0; i < delta.Length(); i += 1)
+			if (!collision.Collided)
 			{
-				physics.Collider.Position += e;
-
-				if (GetFirstCollision(physics, components) == null)
-				{
-					return true;
-				}
+				return;
 			}
-			if (resetPosition)
-			{
-				physics.Collider.Position = oldPosition;
-			}
+			
+			var pos1 = obj1.Owner.GetComponent<CPosition>();
+			var pos2 = obj2.Owner.GetComponent<CPosition>();
+			
+			var resVect = collision.Direction * collision.Depth / 2f;
 
-			return false;
+			obj1.Speed -= resVect / (float)TimeKeeper.GlobalTime();
+			obj2.Speed += resVect / (float)TimeKeeper.GlobalTime();
+
 		}
 
-		bool MoveOutsideSpecial(Vector2 delta, CPhysics physics, List<Component> components, bool resetPosition = true)
+
+		void ResolveCollision(CPhysics obj1, CPhysics obj2)
 		{
-			var e = -delta.GetSafeNormalize();
+			var collision = CollisionSystem.CheckCollision(obj1.Collider, obj2.Collider);
 
-			var oldPosition = physics.Collider.Position;
+			var speedDelta = TimeKeeper.GlobalTime(obj1.Speed - obj2.Speed);
 
-			var collider = GetFirstCollision(physics, components);
 
-			for (var i = 0; i < Math.Max(delta.Length(), physics.Collider.Size.Length()); i += 1)
+			if (!collision.Collided)
 			{
-				physics.Collider.Position += e;
-
-				if (CollisionSystem.CheckCollision(physics.Collider, collider.Collider))
-				{
-					return true;
-				}
-			}
-			if (resetPosition)
-			{
-				physics.Collider.Position = oldPosition;
+				return;
 			}
 
-			return false;
+			var l = 1 * collision.Direction * (Vector2.Dot(speedDelta, collision.Direction)); 
+			
+			obj1.Speed -= l / (float)TimeKeeper.GlobalTime() / 2f;
+			obj2.Speed += l / (float)TimeKeeper.GlobalTime() / 2f;
+
+			PositionalCorrection(obj1, obj2, collision);
 		}
 
+		void PositionalCorrection(CPhysics obj1, CPhysics obj2, Collision collision)
+		{
+			float percent = 0.2f; // usually 20% to 80%
+
+			Vector2 correction = collision.Depth * percent * collision.Direction;
+
+			var pos1 = obj1.Owner.GetComponent<CPosition>();
+			var pos2 = obj2.Owner.GetComponent<CPosition>();
+
+			pos1.Position -= correction;
+			pos2.Position += correction;
+		}
 
 		public override void Draw(Component component)
 		{
@@ -129,10 +127,16 @@ namespace PSH.Physics
 
 			GraphicsMgr.CurrentColor = Color.White;
 
-			RectangleShape.DrawBySize(position.OldPosition.FloorV(), physics.Collider.Size / 2, true);
-			RectangleShape.DrawBySize(position.Position.FloorV(), physics.Collider.Size, true);
+			if (physics.Collider is RectangleCollider)
+			{
+				RectangleShape.DrawBySize(position.Position.FloorV(), physics.Collider.Size, true);
+			}
+			else
+			{
+				CircleShape.Draw(position.Position.FloorV(), physics.Collider.Size.X / 2, true);
+			}
 		}
-
+		/*
 		public static CPhysics GetFirstCollision(CPhysics solid, List<Component> components)
 		{
 			foreach(CPhysics otherSolid in components)
@@ -143,7 +147,7 @@ namespace PSH.Physics
 				}
 			}
 			return null;
-		}
+		}*/
 		
 	}
 }

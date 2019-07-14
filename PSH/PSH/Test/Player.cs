@@ -22,10 +22,17 @@ namespace PSH.Test
 
 		public Player(Layer layer, Vector2 position) : base(layer)
 		{
+			
 			var collider = new RectangleCollider(
 				position, 
-				new Vector2(_r.Next(16, 48), _r.Next(16, 48))
+				new Vector2(_r.Next(32, 64), _r.Next(32, 64))
 			);
+			
+			/*
+			var collider = new CircleCollider(
+				position,
+				_r.Next(16, 48)
+			);*/
 			_speed = _r.Next(100, 200);
 			
 			AddComponent(new CPosition(position));

@@ -7,6 +7,7 @@ namespace PSH.Physics
 	public class CPhysics : Component
 	{
 		public Vector2 Speed;
+		public float Mass;
 		public ICollider Collider;
 
 		public CPhysics()
