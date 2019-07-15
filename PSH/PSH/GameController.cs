@@ -44,18 +44,46 @@ namespace PSH
 			{
 				var e = new Entity(Layer, "wall");
 
-				var collider = new RectangleCollider(Input.MousePosition, Vector2.One * 48);
+				var size = new Vector2(32, 500);
+
+				if (Input.CheckButton(Buttons.LeftShift))
+				{
+					size = new Vector2(500, 32);
+				}
+
+				var collider = new RectangleCollider(Input.MousePosition, size);
 
 				e.AddComponent(new CPosition(Input.MousePosition));
-				e.AddComponent(new CPhysics { Collider = collider });
+				e.AddComponent(new CPhysics { Collider = collider, Mass = 0});
 			}
 
 		}
 
-
 		public override void Draw()
 		{
 			//Default.Monofoxe.Draw(new Vector2(400, 300), Default.Monofoxe.Origin);
+
+			var r = new RectangleCollider(new Vector2(300, 300), new Vector2(100, 100));
+			
+			var c = new CircleCollider(Input.MousePosition, 100);
+
+			var collision = CollisionSystem.RectangleCircle(r, c);
+
+			/*
+			GraphicsMgr.CurrentColor = Color.Orange;
+
+			RectangleShape.DrawBySize(r.Position, r.Size, true);
+			CircleShape.Draw(c.Position, c.Radius, true);
+
+			if (collision.Collided)
+			{
+				GraphicsMgr.CurrentColor = Color.Red;
+
+				LineShape.Draw(c.Position, c.Position + collision.Direction * collision.Depth);
+
+			}
+			*/
+
 		}
 
 	}
