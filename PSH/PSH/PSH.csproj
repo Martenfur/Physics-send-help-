@@ -42,16 +42,20 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Physics\Collisions\Collision.cs" />
+    <Compile Include="Physics\Collisions\Intersections\IIntersection.cs" />
     <Compile Include="Physics\Collisions\Manifold.cs" />
-    <Compile Include="Physics\Collisions\CircleCollider.cs" />
+    <Compile Include="Physics\Collisions\Colliders\CircleCollider.cs" />
+    <Compile Include="Physics\Collisions\Intersections\CircleCircleIntersection.cs" />
+    <Compile Include="Physics\Collisions\Intersections\NoIntersection.cs" />
+    <Compile Include="Physics\Collisions\Intersections\RectangleCircleIntersection.cs" />
+    <Compile Include="Physics\Collisions\Intersections\RectangleRectangleIntersection.cs" />
     <Compile Include="Test\Player.cs" />
     <None Include="Content\Content.npl" />
     <None Include="Content\Graphics\Template.cstemplate" />
     <Compile Include="Game1.cs" />
     <Compile Include="Physics\Collisions\CollisionSystem.cs" />
-    <Compile Include="Physics\Collisions\ICollider.cs" />
-    <Compile Include="Physics\Collisions\RectangleCollider.cs" />
+    <Compile Include="Physics\Collisions\Colliders\ICollider.cs" />
+    <Compile Include="Physics\Collisions\Colliders\RectangleCollider.cs" />
     <Compile Include="Physics\CPhysics.cs" />
     <Compile Include="Physics\CPosition.cs" />
     <Compile Include="Physics\SPhysics.cs" />

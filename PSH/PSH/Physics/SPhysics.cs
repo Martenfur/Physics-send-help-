@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Monofoxe.Engine.ECS;
+﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine;
 using Monofoxe.Engine.Drawing;
+using Monofoxe.Engine.ECS;
 using Monofoxe.Engine.Utils;
-using Microsoft.Xna.Framework;
 using PSH.Physics.Collisions;
+using PSH.Physics.Collisions.Colliders;
+using System;
+using System.Collections.Generic;
 
 
 namespace PSH.Physics
@@ -78,8 +76,9 @@ namespace PSH.Physics
 			obj1.HadCollision = true;
 			obj2.HadCollision = true;
 
+			var manifold = collision.GenerateManifold();
 
-			var dotProduct = Vector2.Dot(speedDelta, collision.Direction);
+			var dotProduct = Vector2.Dot(speedDelta, manifold.Direction);
 
 			// Do not push, if shapes are separating.
 			if (dotProduct < 0)
@@ -92,19 +91,20 @@ namespace PSH.Physics
 
 			if (invMassSum != 0)
 			{
-				l = (1 * collision.Direction * dotProduct) / invMassSum; 
+				// TODO: Add bounciness.
+				l = (1 * manifold.Direction * dotProduct) / invMassSum; 
 			}
 			
 			obj1.Speed -= l / (float)TimeKeeper.GlobalTime() * obj1.InverseMass;
 			obj2.Speed += l / (float)TimeKeeper.GlobalTime() * obj2.InverseMass;
 
-			PositionalCorrection(obj1, obj2, collision);
+			PositionalCorrection(obj1, obj2, manifold);
 		}
 
 		/// <summary>
 		/// Pushes bodies out of each other.
 		/// </summary>
-		void PositionalCorrection(CPhysics obj1, CPhysics obj2, Manifold collision)
+		void PositionalCorrection(CPhysics obj1, CPhysics obj2, Manifold manifold)
 		{
 			var invMassSum = obj1.InverseMass + obj2.InverseMass;
 			if (invMassSum == 0)
@@ -112,7 +112,7 @@ namespace PSH.Physics
 				return;
 			}
 
-			var correction = Math.Max(collision.Depth - _positionCorrectionSlack, 0) / invMassSum * _positionCorrection * collision.Direction;
+			var correction = Math.Max(manifold.Depth - _positionCorrectionSlack, 0) / invMassSum * _positionCorrection * manifold.Direction;
 
 			var pos1 = obj1.Owner.GetComponent<CPosition>();
 			var pos2 = obj2.Owner.GetComponent<CPosition>();
@@ -135,27 +135,8 @@ namespace PSH.Physics
 				GraphicsMgr.CurrentColor = Color.White;
 			}
 
-			if (physics.Collider is RectangleCollider)
-			{
-				RectangleShape.DrawBySize(position.Position.FloorV(), physics.Collider.HalfSize * 2, false);
-			}
-			else
-			{
-				CircleShape.Draw(position.Position.FloorV(), physics.Collider.HalfSize.X, true);
-			}
+			physics.Collider.Draw(false);
 		}
-		/*
-		public static CPhysics GetFirstCollision(CPhysics solid, List<Component> components)
-		{
-			foreach(CPhysics otherSolid in components)
-			{
-				if (solid != otherSolid && CollisionSystem.CheckCollision(solid.Collider, otherSolid.Collider))
-				{
-					return otherSolid;
-				}
-			}
-			return null;
-		}*/
 		
 	}
 }

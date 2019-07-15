@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine.ECS;
-using PSH.Physics.Collisions;
+using PSH.Physics.Collisions.Colliders;
 
 namespace PSH.Physics
 {

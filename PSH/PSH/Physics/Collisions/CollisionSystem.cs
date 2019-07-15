@@ -1,211 +1,196 @@
-﻿using Monofoxe.Engine.Utils;
-using Monofoxe.Engine;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using PSH.Physics.Collisions.Colliders;
+using PSH.Physics.Collisions.Intersections;
 using System;
 
 
 namespace PSH.Physics.Collisions
 {
+	public delegate IIntersection IntersectionDelegate(ICollider a, ICollider b, bool flipNormal);
+
 	public static class CollisionSystem
 	{
-		public static Manifold CheckCollision(ICollider collider1, ICollider collider2)
+		/// <summary>
+		/// Matrix contains all allowed collider combinations.
+		/// </summary>
+		private static IntersectionDelegate[,] _intersectionMatrix;
+
+		private const int _intersectionMatrixSize = 2;
+
+		public static void Init()
 		{
-			if (collider1 is RectangleCollider && collider2 is RectangleCollider)
-			{
-				return RectangleRectangle((RectangleCollider)collider1, (RectangleCollider)collider2);
-			}
-			if (collider1 is CircleCollider && collider2 is CircleCollider)
-			{
-				return CircleCircle((CircleCollider)collider1, (CircleCollider)collider2);
-			}
+			/*
+			 *   | r  | c 
+			 * ------------
+			 * r | rr | rc  
+			 * ------------
+			 * c | xx | cc  
+			 */
 
-			if (collider1 is RectangleCollider && collider2 is CircleCollider)
-			{
-				return RectangleCircle((RectangleCollider)collider1, (CircleCollider)collider2);
-			}
-			if (collider2 is RectangleCollider && collider1 is CircleCollider)
-			{
-				var c = RectangleCircle((RectangleCollider)collider2, (CircleCollider)collider1);
-				c.Direction *= -1;
-				return c;
-			}
+			_intersectionMatrix = new IntersectionDelegate[_intersectionMatrixSize, _intersectionMatrixSize];
 
-			return new Manifold();
+			_intersectionMatrix[
+				(int)ColliderType.Rectangle,
+				(int)ColliderType.Rectangle
+			] = RectangleRectangle;
+
+			_intersectionMatrix[
+				(int)ColliderType.Circle,
+				(int)ColliderType.Circle
+			] = CircleCircle;
+
+			_intersectionMatrix[
+				(int)ColliderType.Rectangle,
+				(int)ColliderType.Circle
+			] = RectangleCircle;
+			
 		}
 
-		public static Manifold RectangleCircle(RectangleCollider rectangle, CircleCollider circle)
+		public static IIntersection CheckCollision(ICollider collider1, ICollider collider2)
 		{
-			var collision = new Manifold();
+			/*
+			 * Each collider type has its own unique index.
+			 * We are taking them and retrieving appropriate
+			 * collision function.
+			 */
+			var id1 = (int)collider1.ColliderType;
+			var id2 = (int)collider2.ColliderType;
 
+			// Maybe add a null check here to prevent crashes, if some function isn't implemented.
+			// Though, this probably won't be needed.
 
-			var delta = circle.Position - rectangle.Position;
-
-			var closest = new Vector2(
-				MathHelper.Clamp(delta.X, -rectangle.HalfSize.X, rectangle.HalfSize.X),
-				MathHelper.Clamp(delta.Y, -rectangle.HalfSize.Y, rectangle.HalfSize.Y)
-			);
-
-			var inside = false;
-			
-			if (delta == closest)
+			if (id2 < id1) // Only upper half of matrix is being used.
 			{
-				inside = true;
-				
-				if (rectangle.HalfSize.X - Math.Abs(delta.X) < rectangle.HalfSize.Y - Math.Abs(delta.Y))
-				{
-					if (closest.X > 0)
-					{
-						closest.X = rectangle.HalfSize.X;
-					}
-					else
-					{
-						closest.X = -rectangle.HalfSize.X;
-					}
-				}
-				else
-				{
-					if (closest.Y > 0)
-					{
-						closest.Y = rectangle.HalfSize.Y;
-					}
-					else
-					{
-						closest.Y = -rectangle.HalfSize.Y;
-					}
-				}
-
+				return _intersectionMatrix[id2, id1](collider2, collider1, true);
 			}
-
-			var normal = delta - closest;
-			var d = normal.LengthSquared();
-			//
-			if (d > circle.Radius * circle.Radius && !inside)
-			{
-				collision.Collided = false;
-				return collision;
-			}
-
-			d = (float)Math.Sqrt(d);
-
-			if (d == 0)
-			{
-				normal = Vector2.UnitX;
-			}
-			else
-			{
-				normal /= d;
-			}
-
-
-			if (inside)
-			{	
-				collision.Direction = -normal;
-				
-				collision.Depth = d + circle.Radius;
-			}
-			else
-			{
-				collision.Direction = normal;
-				collision.Depth = circle.Radius - d;
-			}
-			collision.Collided = true;
-			
-			return collision;
+			return _intersectionMatrix[id1, id2](collider1, collider2, false);
 		}
 
+		
 
-		public static Manifold RectangleRectangle(RectangleCollider collider1, RectangleCollider collider2)
+		public static IIntersection RectangleRectangle(ICollider a, ICollider b, bool flipNormal)
 		{
-			var collision = new Manifold();
+			var r1 = (RectangleCollider)a;
+			var r2 = (RectangleCollider)b;
 
-			var delta = collider2.Position - collider1.Position;
+			var delta = r2.Position - r1.Position;
 			
-			var overlapX = collider1.HalfSize.X + collider2.HalfSize.X - Math.Abs(delta.X);
+			var overlapX = r1.HalfSize.X + r2.HalfSize.X - Math.Abs(delta.X);
 
 			if (overlapX > 0)
 			{
-				var overlapY = collider1.HalfSize.Y + collider2.HalfSize.Y - Math.Abs(delta.Y);
+				var overlapY = r1.HalfSize.Y + r2.HalfSize.Y - Math.Abs(delta.Y);
 
 				if (overlapY > 0)
 				{
-					if (overlapX < overlapY)
-					{
-						// Point towards B knowing that n points from A to B
-						if (delta.X < 0)
-						{
-							collision.Direction = new Vector2(-1, 0);
-						}
-						else
-						{
-							collision.Direction = new Vector2(1, 0);
-						}
-
-						collision.Depth = overlapX;
-						
-					}
-					else
-					{
-						// Point towards B knowing that n points from A to B
-						if (delta.Y < 0)
-						{
-							collision.Direction = new Vector2(0, -1);
-						}
-						else
-						{
-							collision.Direction = new Vector2(0, 1);
-						}
-
-						collision.Depth = overlapY;
-						
-					}
-					collision.Collided = true;
+					var collision = new RectangleRectangleIntersection(
+						r1, 
+						r2, 
+						true, 
+						delta, 
+						new Vector2(overlapX, overlapY)
+					);
+					
 					return collision;
 				}
 
 			}
 
-			return new Manifold();
-		}
-
-
-		public static Manifold CircleCircle(CircleCollider collider1, CircleCollider collider2)
-		{
-			var collision = new Manifold();
-
-			var delta = collider2.Position - collider1.Position;
-			
-			var rSum = collider1.Radius + collider2.Radius;
-			rSum *= rSum;
-
-			var lengthSqr = delta.LengthSquared();
-
-			if (lengthSqr > rSum)
-			{
-				// No collision.
-				collision.Collided = false;
-				return collision;
-			}
-
-			collision.Collided = true;
-
-			if (lengthSqr != 0)
-			{
-				var length = (float)Math.Sqrt(lengthSqr);
-
-				collision.Depth = (float)Math.Sqrt(rSum) - length;
-
-				collision.Direction = delta / length;
-			}
-			else
-			{
-				collision.Depth = collider1.Radius;
-				collision.Direction = Vector2.UnitX;
-			}
-
-			return collision;
+			return new RectangleRectangleIntersection(
+				r1,
+				r2,
+				false,
+				Vector2.Zero,
+				Vector2.Zero
+			); 
 		}
 
 		
+		public static IIntersection CircleCircle(ICollider a, ICollider b, bool flipNormal)
+		{
+			var c1 = (CircleCollider)a;
+			var c2 = (CircleCollider)b;
+
+			var delta = c2.Position - c1.Position;
+			
+			var rSumSqr = c1.Radius + c2.Radius;
+			rSumSqr *= rSumSqr;
+
+			var lengthSqr = delta.LengthSquared();
+
+			if (lengthSqr > rSumSqr) // No collision.
+			{
+				return new CircleCircleIntersection(c1, c2, false, Vector2.Zero, 0, 0);
+			}
+
+			return new CircleCircleIntersection(c1, c2, true,	delta, lengthSqr, rSumSqr);
+		}
+		
+		 
+		public static IIntersection RectangleCircle(ICollider a, ICollider b, bool flipNormal)
+		{
+			var r = (RectangleCollider)a;
+			var c = (CircleCollider)b;
+
+			var collision = new Manifold();
+
+
+			var delta = c.Position - r.Position;
+
+
+			var closestCorner = new Vector2(
+				MathHelper.Clamp(delta.X, -r.HalfSize.X, r.HalfSize.X),
+				MathHelper.Clamp(delta.Y, -r.HalfSize.Y, r.HalfSize.Y)
+			);
+
+			var inside = false;
+			
+			if (delta == closestCorner)
+			{
+				inside = true;
+				
+				if (r.HalfSize.X - Math.Abs(delta.X) < r.HalfSize.Y - Math.Abs(delta.Y))
+				{
+					if (closestCorner.X > 0)
+					{
+						closestCorner.X = r.HalfSize.X;
+					}
+					else
+					{
+						closestCorner.X = -r.HalfSize.X;
+					}
+				}
+				else
+				{
+					if (closestCorner.Y > 0)
+					{
+						closestCorner.Y = r.HalfSize.Y;
+					}
+					else
+					{
+						closestCorner.Y = -r.HalfSize.Y;
+					}
+				}
+
+			}
+
+			var normal = delta - closestCorner;
+			var d = normal.LengthSquared();
+			//
+			if (d > c.Radius * c.Radius && !inside)
+			{
+				return new RectangleCircleIntersection(r, c, false, Vector2.Zero, Vector2.Zero, false, Vector2.Zero, 0);
+			}
+
+			if (flipNormal)
+			{
+				normal *= -1;
+			}
+			return new RectangleCircleIntersection(r, c, true, delta, closestCorner, inside,	normal,	d);
+		}
+		
+
+
 
 	}
 }

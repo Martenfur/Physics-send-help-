@@ -1,11 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using Monofoxe.Engine.Drawing;
 
-namespace PSH.Physics.Collisions
+namespace PSH.Physics.Collisions.Colliders
 {
 	public struct CircleCollider : ICollider
 	{
-		public ColliderType ColliderType => ColliderType.Rectangle;
+		public ColliderType ColliderType => ColliderType.Circle;
 		public Vector2 Position { get; set; }
 		
 
@@ -25,5 +26,8 @@ namespace PSH.Physics.Collisions
 			Radius = radius;
 			Enabled = true;
 		}
+
+		public void Draw(bool isOutline) =>
+			CircleShape.Draw(Position, Radius, isOutline);
 	}
 }

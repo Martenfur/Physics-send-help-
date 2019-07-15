@@ -1,11 +1,6 @@
-﻿using System;
+﻿using Monofoxe.Engine.ECS;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Monofoxe.Engine.ECS;
-using Monofoxe.Engine.SceneSystem;
-using Microsoft.Xna.Framework;
 
 namespace PSH.Physics
 {

@@ -1,14 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Monofoxe.Engine;
+using Monofoxe.Engine.Cameras;
 using Monofoxe.Engine.Drawing;
 using Monofoxe.Engine.ECS;
 using Monofoxe.Engine.SceneSystem;
-using Monofoxe.Engine.Cameras;
-using Resources.Sprites;
-using PSH.Test;
-using PSH.Physics.Collisions;
 using PSH.Physics;
+using PSH.Physics.Collisions;
+using PSH.Physics.Collisions.Colliders;
+using PSH.Test;
 
 
 namespace PSH
@@ -32,6 +32,8 @@ namespace PSH
 			GameMgr.WindowManager.CanvasMode = CanvasMode.Fill;
 			
 			GraphicsMgr.Sampler = SamplerState.PointClamp;
+
+			CollisionSystem.Init();
 		}
 		
 		public override void Update()
@@ -67,7 +69,7 @@ namespace PSH
 			
 			var c = new CircleCollider(Input.MousePosition, 100);
 
-			var collision = CollisionSystem.RectangleCircle(r, c);
+			//var collision = CollisionSystem.RectangleCircle(r, c);
 
 			/*
 			GraphicsMgr.CurrentColor = Color.Orange;

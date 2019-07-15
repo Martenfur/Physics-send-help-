@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Monofoxe.Engine.ECS;
+﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine;
+using Monofoxe.Engine.ECS;
 using Monofoxe.Engine.SceneSystem;
 using Monofoxe.Engine.Utils;
-using Microsoft.Xna.Framework;
-using PSH.Physics.Collisions;
 using PSH.Physics;
+using PSH.Physics.Collisions.Colliders;
 
 
 namespace PSH.Test
@@ -66,7 +61,7 @@ namespace PSH.Test
 
 			var ddir = 90;//GameMath.Direction(position.Position, Input.MousePosition);
 									 
-			//physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
+			physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
 			if (physics.Speed.Y > _speed)
 			{
 				physics.Speed.Y = _speed;

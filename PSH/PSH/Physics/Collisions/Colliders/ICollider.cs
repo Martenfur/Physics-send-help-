@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 
-namespace PSH.Physics.Collisions
+namespace PSH.Physics.Collisions.Colliders
 {
 	public interface ICollider
 	{
@@ -19,11 +18,19 @@ namespace PSH.Physics.Collisions
 		/// </summary>
 		Vector2 HalfSize { get; set; }
 		
+		// TODO: Add offsets.
+
+		/// <summary>
+		/// TODO: Implement.
+		/// </summary>
 		bool Enabled { get; set; }
+
+		void Draw(bool isOutline);
 	}
 
 	public enum ColliderType : int
 	{
 		Rectangle = 0,
+		Circle = 1,
 	}
 }
