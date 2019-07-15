@@ -8,7 +8,7 @@ namespace PSH.Physics.Collisions
 {
 	public static class CollisionSystem
 	{
-		public static Collision CheckCollision(ICollider collider1, ICollider collider2)
+		public static Manifold CheckCollision(ICollider collider1, ICollider collider2)
 		{
 			if (collider1 is RectangleCollider && collider2 is RectangleCollider)
 			{
@@ -30,19 +30,19 @@ namespace PSH.Physics.Collisions
 				return c;
 			}
 
-			return new Collision();
+			return new Manifold();
 		}
 
-		public static Collision RectangleCircle(RectangleCollider rectangle, CircleCollider circle)
+		public static Manifold RectangleCircle(RectangleCollider rectangle, CircleCollider circle)
 		{
-			var collision = new Collision();
+			var collision = new Manifold();
 
 
 			var delta = circle.Position - rectangle.Position;
 
 			var closest = new Vector2(
-				MathHelper.Clamp(delta.X, -rectangle.Size.X / 2f, rectangle.Size.X / 2f),
-				MathHelper.Clamp(delta.Y, -rectangle.Size.Y / 2f, rectangle.Size.Y / 2f)
+				MathHelper.Clamp(delta.X, -rectangle.HalfSize.X, rectangle.HalfSize.X),
+				MathHelper.Clamp(delta.Y, -rectangle.HalfSize.Y, rectangle.HalfSize.Y)
 			);
 
 			var inside = false;
@@ -51,26 +51,26 @@ namespace PSH.Physics.Collisions
 			{
 				inside = true;
 				
-				if (rectangle.Size.X / 2f - Math.Abs(delta.X) < rectangle.Size.Y / 2f - Math.Abs(delta.Y))
+				if (rectangle.HalfSize.X - Math.Abs(delta.X) < rectangle.HalfSize.Y - Math.Abs(delta.Y))
 				{
 					if (closest.X > 0)
 					{
-						closest.X = rectangle.Size.X / 2f;
+						closest.X = rectangle.HalfSize.X;
 					}
 					else
 					{
-						closest.X = -rectangle.Size.X / 2f;
+						closest.X = -rectangle.HalfSize.X;
 					}
 				}
 				else
 				{
 					if (closest.Y > 0)
 					{
-						closest.Y = rectangle.Size.Y / 2f;
+						closest.Y = rectangle.HalfSize.Y;
 					}
 					else
 					{
-						closest.Y = -rectangle.Size.Y / 2f;
+						closest.Y = -rectangle.HalfSize.Y;
 					}
 				}
 
@@ -78,7 +78,7 @@ namespace PSH.Physics.Collisions
 
 			var normal = delta - closest;
 			var d = normal.LengthSquared();
-
+			//
 			if (d > circle.Radius * circle.Radius && !inside)
 			{
 				collision.Collided = false;
@@ -87,14 +87,25 @@ namespace PSH.Physics.Collisions
 
 			d = (float)Math.Sqrt(d);
 
-			if (inside)
+			if (d == 0)
 			{
-				collision.Direction = -normal / d;
+				normal = Vector2.UnitX;
+			}
+			else
+			{
+				normal /= d;
+			}
+
+
+			if (inside)
+			{	
+				collision.Direction = -normal;
+				
 				collision.Depth = d + circle.Radius;
 			}
 			else
 			{
-				collision.Direction = normal / d;
+				collision.Direction = normal;
 				collision.Depth = circle.Radius - d;
 			}
 			collision.Collided = true;
@@ -103,18 +114,17 @@ namespace PSH.Physics.Collisions
 		}
 
 
-		public static Collision RectangleRectangle(RectangleCollider collider1, RectangleCollider collider2)
+		public static Manifold RectangleRectangle(RectangleCollider collider1, RectangleCollider collider2)
 		{
-			var collision = new Collision();
+			var collision = new Manifold();
 
 			var delta = collider2.Position - collider1.Position;
-
 			
-			var overlapX = (collider1.Size.X + collider2.Size.X) / 2f - Math.Abs(delta.X);
+			var overlapX = collider1.HalfSize.X + collider2.HalfSize.X - Math.Abs(delta.X);
 
 			if (overlapX > 0)
 			{
-				var overlapY = (collider1.Size.Y + collider2.Size.Y) / 2f - Math.Abs(delta.Y);
+				var overlapY = collider1.HalfSize.Y + collider2.HalfSize.Y - Math.Abs(delta.Y);
 
 				if (overlapY > 0)
 				{
@@ -154,13 +164,13 @@ namespace PSH.Physics.Collisions
 
 			}
 
-			return new Collision();
+			return new Manifold();
 		}
 
 
-		public static Collision CircleCircle(CircleCollider collider1, CircleCollider collider2)
+		public static Manifold CircleCircle(CircleCollider collider1, CircleCollider collider2)
 		{
-			var collision = new Collision();
+			var collision = new Manifold();
 
 			var delta = collider2.Position - collider1.Position;
 			

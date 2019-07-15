@@ -9,9 +9,9 @@ namespace PSH.Physics.Collisions
 		public Vector2 Position { get; set; }
 		
 
-		public Vector2 Size 
+		public Vector2 HalfSize 
 		{ 
-			get => Vector2.One * Radius * 2; 
+			get => Vector2.One * Radius; 
 			set => throw new NotImplementedException(); 
 		}
 

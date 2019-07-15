@@ -20,26 +20,31 @@ namespace PSH.Physics
 
 		public override int Priority => 1;
 		
+		private const float _positionCorrection = 0.4f; // 0.2 - 0.8
+		private const float _positionCorrectionSlack = 0.01f; // 0.01 - 0.1
+
 
 		public override void FixedUpdate(List<Component> components)
 		{
 
-			
 			for (var i = 0; i < components.Count; i += 1)
 			{
 				var physics = (CPhysics)components[i];
 
-				if (physics.InverseMass == 0)
+				physics.HadCollision = false;
+			}
+
+			for (var i = 0; i < components.Count - 1; i += 1)
+			{
+				var physics = (CPhysics)components[i];
+				
+				/*if (physics.InverseMass == 0)
 				{
 					continue;
-				}
+				}*/
 
-				for (var k = 0; k < components.Count; k += 1)
+				for (var k = i + 1; k < components.Count; k += 1)
 				{
-					if (i == k)
-					{
-						continue;
-					}
 					var otherPhysics = (CPhysics)components[k];
 
 					ResolveCollision(physics, otherPhysics);
@@ -54,16 +59,9 @@ namespace PSH.Physics
 
 				position.Position += TimeKeeper.GlobalTime(physics.Speed);
 				
-
 				physics.Collider.Position = position.Position;
 			}
-
-
-
-
-
-
-
+			
 		}
 
 		void ResolveCollision(CPhysics obj1, CPhysics obj2)
@@ -77,6 +75,9 @@ namespace PSH.Physics
 			{
 				return;
 			}
+			obj1.HadCollision = true;
+			obj2.HadCollision = true;
+
 
 			var dotProduct = Vector2.Dot(speedDelta, collision.Direction);
 
@@ -86,7 +87,13 @@ namespace PSH.Physics
 				return;
 			}
 
-			var l = (1 * collision.Direction * dotProduct) / (obj1.InverseMass + obj2.InverseMass); 
+			var invMassSum = obj1.InverseMass + obj2.InverseMass;
+			var l = Vector2.Zero;
+
+			if (invMassSum != 0)
+			{
+				l = (1 * collision.Direction * dotProduct) / invMassSum; 
+			}
 			
 			obj1.Speed -= l / (float)TimeKeeper.GlobalTime() * obj1.InverseMass;
 			obj2.Speed += l / (float)TimeKeeper.GlobalTime() * obj2.InverseMass;
@@ -94,12 +101,18 @@ namespace PSH.Physics
 			PositionalCorrection(obj1, obj2, collision);
 		}
 
-		void PositionalCorrection(CPhysics obj1, CPhysics obj2, Collision collision)
+		/// <summary>
+		/// Pushes bodies out of each other.
+		/// </summary>
+		void PositionalCorrection(CPhysics obj1, CPhysics obj2, Manifold collision)
 		{
-			var percent = 0.4f; // 0.2 - 0.8
-			var slack = 0.01f; // 0.01 - 0.1
+			var invMassSum = obj1.InverseMass + obj2.InverseMass;
+			if (invMassSum == 0)
+			{
+				return;
+			}
 
-			Vector2 correction = Math.Max(collision.Depth - slack, 0) / (obj1.InverseMass + obj2.InverseMass) * percent * collision.Direction;
+			var correction = Math.Max(collision.Depth - _positionCorrectionSlack, 0) / invMassSum * _positionCorrection * collision.Direction;
 
 			var pos1 = obj1.Owner.GetComponent<CPosition>();
 			var pos2 = obj2.Owner.GetComponent<CPosition>();
@@ -113,15 +126,22 @@ namespace PSH.Physics
 			var physics = (CPhysics)component;
 			var position = physics.Owner.GetComponent<CPosition>();
 
-			GraphicsMgr.CurrentColor = Color.White;
-
-			if (physics.Collider is RectangleCollider)
+			if (physics.HadCollision)
 			{
-				RectangleShape.DrawBySize(position.Position.FloorV(), physics.Collider.Size, false);
+				GraphicsMgr.CurrentColor = Color.Red;
 			}
 			else
 			{
-				CircleShape.Draw(position.Position.FloorV(), physics.Collider.Size.X / 2, true);
+				GraphicsMgr.CurrentColor = Color.White;
+			}
+
+			if (physics.Collider is RectangleCollider)
+			{
+				RectangleShape.DrawBySize(position.Position.FloorV(), physics.Collider.HalfSize * 2, false);
+			}
+			else
+			{
+				CircleShape.Draw(position.Position.FloorV(), physics.Collider.HalfSize.X, true);
 			}
 		}
 		/*

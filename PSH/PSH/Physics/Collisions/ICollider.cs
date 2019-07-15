@@ -17,7 +17,7 @@ namespace PSH.Physics.Collisions
 		/// <summary>
 		/// AABB size.
 		/// </summary>
-		Vector2 Size { get; set; }
+		Vector2 HalfSize { get; set; }
 		
 		bool Enabled { get; set; }
 	}

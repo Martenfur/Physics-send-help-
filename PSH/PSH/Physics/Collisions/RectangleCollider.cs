@@ -7,14 +7,14 @@ namespace PSH.Physics.Collisions
 		public ColliderType ColliderType => ColliderType.Rectangle;
 		public Vector2 Position { get; set; }
 		
-		public Vector2 Size { get; set; }
+		public Vector2 HalfSize { get; set; }
 
 		public bool Enabled { get; set; }
 
 		public RectangleCollider(Vector2 position, Vector2 size)
 		{
 			Position = position;
-			Size = size;
+			HalfSize = size / 2;
 			Enabled = true;
 		}
 	}

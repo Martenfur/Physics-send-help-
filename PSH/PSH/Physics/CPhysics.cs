@@ -33,6 +33,8 @@ namespace PSH.Physics
 
 		public ICollider Collider;
 
+		public bool HadCollision = false;
+
 		public CPhysics()
 		{
 			Visible = true;
