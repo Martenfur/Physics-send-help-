@@ -7,7 +7,7 @@ using PSH.Physics.Collisions;
 using PSH.Physics.Collisions.Colliders;
 using System;
 using System.Collections.Generic;
-
+using System.Diagnostics;
 
 namespace PSH.Physics
 {
@@ -21,10 +21,24 @@ namespace PSH.Physics
 		private const float _positionCorrection = 0.4f; // 0.2 - 0.8
 		private const float _positionCorrectionSlack = 0.01f; // 0.01 - 0.1
 
+		public static CollisionGrid Grid = new CollisionGrid();
+
+		private int _iterations;
 
 		public override void FixedUpdate(List<Component> components)
 		{
+			var sw = new Stopwatch();
+			_iterations = 0;
+			
+			sw.Start();
 
+			Grid.Clear();
+			for (var i = 0; i < components.Count; i += 1)
+			{
+				var physics = (CPhysics)components[i];
+
+				Grid.Add(physics);
+			}
 			for (var i = 0; i < components.Count; i += 1)
 			{
 				var physics = (CPhysics)components[i];
@@ -32,20 +46,19 @@ namespace PSH.Physics
 				physics.HadCollision = false;
 			}
 
-			for (var i = 0; i < components.Count - 1; i += 1)
+			foreach(var list in Grid.Cells)
 			{
-				var physics = (CPhysics)components[i];
+				for (var i = 0; i < list.Count - 1; i += 1)
+				{
+					var physics = list[i];
 				
-				/*if (physics.InverseMass == 0)
-				{
-					continue;
-				}*/
 
-				for (var k = i + 1; k < components.Count; k += 1)
-				{
-					var otherPhysics = (CPhysics)components[k];
+					for (var k = i + 1; k < list.Count; k += 1)
+					{
+						var otherPhysics = list[k];
 
-					ResolveCollision(physics, otherPhysics);
+						ResolveCollision(physics, otherPhysics);
+					}
 				}
 			}
 
@@ -59,11 +72,20 @@ namespace PSH.Physics
 				
 				physics.Collider.Position = position.Position;
 			}
+
+			sw.Stop();
+
+			GameMgr.WindowManager.WindowTitle = "fps: " + GameMgr.Fps 
+				+ ", iterations: " + _iterations 
+				+ ", time: " + sw.ElapsedTicks 
+				+ ", bodies: " + components.Count;
 			
 		}
 
 		void ResolveCollision(CPhysics obj1, CPhysics obj2)
 		{
+			var sw = 
+			_iterations += 1;
 			var collision = CollisionSystem.CheckCollision(obj1.Collider, obj2.Collider);
 
 			var speedDelta = TimeKeeper.GlobalTime(obj1.Speed - obj2.Speed);
@@ -135,7 +157,7 @@ namespace PSH.Physics
 				GraphicsMgr.CurrentColor = Color.White;
 			}
 
-			physics.Collider.Draw(false);
+			physics.Collider.Draw(true);
 		}
 		
 	}

@@ -34,11 +34,13 @@ namespace PSH
 			GraphicsMgr.Sampler = SamplerState.PointClamp;
 
 			CollisionSystem.Init();
+
+			CircleShape.CircleVerticesCount = 8;
 		}
 		
 		public override void Update()
 		{
-			if (Input.CheckButtonPress(Buttons.B))
+			if (Input.CheckButton(Buttons.B))
 			{
 				new Player(Layer, Input.MousePosition);
 			}
@@ -85,6 +87,8 @@ namespace PSH
 
 			}
 			*/
+			GraphicsMgr.CurrentColor = Color.Red * 0.2f;
+			SPhysics.Grid.Draw();
 
 		}
 
