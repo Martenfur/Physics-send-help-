@@ -19,7 +19,7 @@ namespace PSH.Test
 		{
 			ICollider collider;
 
-			if (_r.Next(2) == 0)
+			if (_r.Next(2) >= 0)
 			{
 				collider = new RectangleCollider(
 					position, 
@@ -60,7 +60,8 @@ namespace PSH.Test
 			}
 
 			var ddir = 90;//GameMath.Direction(position.Position, Input.MousePosition);
-									 
+			
+			if (Input.CheckButton(Buttons.G))
 			physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
 			if (physics.Speed.Y > _speed)
 			{

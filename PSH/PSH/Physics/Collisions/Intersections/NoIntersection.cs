@@ -10,7 +10,12 @@ namespace PSH.Physics.Collisions.Intersections
 		public bool Collided => false;
 		public ICollider A => null;
 		public ICollider B => null;
-		
+
+		public CPhysics CachedA { get; set; }
+		public CPhysics CachedB { get; set; }
+
+		public Manifold Manifold {get; set;}
+
 		public Manifold GenerateManifold() => new Manifold();
 	}
 }

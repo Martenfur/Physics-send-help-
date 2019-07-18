@@ -10,6 +10,12 @@ namespace PSH.Physics.Collisions.Intersections
 
 		ICollider B {get;}
 
+		CPhysics CachedA { get; set; }
+
+		CPhysics CachedB { get; set; }
+
+		Manifold Manifold { get; set; }
+
 		Manifold GenerateManifold();
 	}
 }

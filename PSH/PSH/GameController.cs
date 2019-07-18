@@ -40,7 +40,7 @@ namespace PSH
 		
 		public override void Update()
 		{
-			if (Input.CheckButton(Buttons.B))
+			if (Input.CheckButtonPress(Buttons.B) || Input.CheckButton(Buttons.M))
 			{
 				new Player(Layer, Input.MousePosition);
 			}

@@ -9,6 +9,12 @@ namespace PSH.Physics.Collisions.Intersections
 		public ICollider A {get; private set;}
 		public ICollider B {get; private set;}
 
+		public CPhysics CachedA { get; set; }
+		public CPhysics CachedB { get; set; }
+
+		public Manifold Manifold { get; set; }
+
+
 		Vector2 _overlap;
 
 		Vector2 _delta;
@@ -26,6 +32,9 @@ namespace PSH.Physics.Collisions.Intersections
 			Collided = collided;
 			_delta = delta;
 			_overlap = overlap;
+			CachedA = null;
+			CachedB = null;
+			Manifold = default(Manifold);
 		}
 
 		public Manifold GenerateManifold()
@@ -58,6 +67,9 @@ namespace PSH.Physics.Collisions.Intersections
 				}
 				manifold.Depth = _overlap.Y;
 			}
+
+			Manifold = manifold;
+
 			return manifold;
 		}
 

@@ -10,6 +10,12 @@ namespace PSH.Physics.Collisions.Intersections
 		public ICollider A {get; private set;}
 		public ICollider B {get; private set;}
 
+		public CPhysics CachedA { get; set; }
+		public CPhysics CachedB { get; set; }
+
+		public Manifold Manifold {get; set;}
+
+
 		Vector2 _delta;
 
 		float _lengthSqr;
@@ -31,6 +37,9 @@ namespace PSH.Physics.Collisions.Intersections
 			_delta = delta;
 			_lengthSqr = lengthSqr;
 			_rSumSqr = rSumSqr;
+			CachedA = null;
+			CachedB = null;
+			Manifold = default(Manifold);
 		}
 
 		public Manifold GenerateManifold()
@@ -51,6 +60,7 @@ namespace PSH.Physics.Collisions.Intersections
 				manifold.Direction = Vector2.UnitX;
 			}
 
+			Manifold = manifold;
 			return manifold;
 		}
 
