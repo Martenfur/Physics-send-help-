@@ -15,7 +15,7 @@ namespace PSH
 {
 	public class GameController : Entity
 	{
-		Camera cam = new Camera(800, 600);
+		Camera cam = new Camera(1200, 800);
 
 		public GameController() : base(SceneMgr.GetScene("default")["default"])
 		{
@@ -25,7 +25,7 @@ namespace PSH
 
 			cam.BackgroundColor = new Color(38, 38, 38);
 
-			GameMgr.WindowManager.CanvasSize = new Vector2(800, 600);
+			GameMgr.WindowManager.CanvasSize = new Vector2(1200, 800);
 			GameMgr.WindowManager.Window.AllowUserResizing = false;
 			GameMgr.WindowManager.ApplyChanges();
 			GameMgr.WindowManager.CenterWindow();
@@ -87,7 +87,7 @@ namespace PSH
 
 			}
 			*/
-			GraphicsMgr.CurrentColor = Color.Red * 0.2f;
+			GraphicsMgr.CurrentColor = Color.Beige * 0.7f;
 			SPhysics.Grid.Draw();
 
 		}

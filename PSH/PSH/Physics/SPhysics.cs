@@ -18,12 +18,14 @@ namespace PSH.Physics
 
 		public override int Priority => 1;
 		
-		private const float _positionCorrection = 0.4f; // 0.2 - 0.8
+		private const float _positionCorrection = 0.01f; // 0.2 - 0.8
 		private const float _positionCorrectionSlack = 0.01f; // 0.01 - 0.1
 
 		public static CollisionGrid Grid = new CollisionGrid();
 
 		private int _iterations;
+
+		private bool _flipflop = false;
 
 		public override void FixedUpdate(List<Component> components)
 		{
@@ -32,34 +34,34 @@ namespace PSH.Physics
 			
 			sw.Start();
 
+			for(var t = 0; t < 5; t += 1)
+			{
 			Grid.Clear();
 			for (var i = 0; i < components.Count; i += 1)
 			{
 				var physics = (CPhysics)components[i];
 
 				Grid.Add(physics);
-			}
-			for (var i = 0; i < components.Count; i += 1)
-			{
-				var physics = (CPhysics)components[i];
-
 				physics.HadCollision = false;
 			}
 
-			foreach(var list in Grid.Cells)
+			foreach(var quad in Grid.Cells)
 			{
-				for (var i = 0; i < list.Count - 1; i += 1)
+				foreach (var leaf in quad.GetLeaves())
 				{
-					var physics = list[i];
-				
-
-					for (var k = i + 1; k < list.Count; k += 1)
+					for (var i = 0; i < leaf.Count - 1; i += 1)
 					{
-						var otherPhysics = list[k];
+						var physics = leaf[i];
 
-						ResolveCollision(physics, otherPhysics);
+						for (var k = i + 1; k < leaf.Count; k += 1)
+						{
+							var otherPhysics = leaf[k];
+
+							ResolveCollision(physics, otherPhysics);
+						}
 					}
 				}
+			}
 			}
 
 			for (var i = 0; i < components.Count; i += 1)

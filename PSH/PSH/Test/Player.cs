@@ -23,14 +23,14 @@ namespace PSH.Test
 			{
 				collider = new RectangleCollider(
 					position, 
-					new Vector2(_r.Next(32, 64), _r.Next(32, 64)) / 4f
+					new Vector2(_r.Next(32, 64), _r.Next(32, 64)) / 2f
 				);
 			}
 			else
 			{
 				collider = new CircleCollider(
 					position,
-					_r.Next(16, 48) / 4f
+					_r.Next(16, 48) / 2f
 				);
 			}
 
@@ -61,7 +61,7 @@ namespace PSH.Test
 
 			var ddir = 90;//GameMath.Direction(position.Position, Input.MousePosition);
 									 
-			//physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
+			physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
 			if (physics.Speed.Y > _speed)
 			{
 				physics.Speed.Y = _speed;

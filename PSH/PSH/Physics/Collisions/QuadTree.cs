@@ -1,0 +1,51 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
+
+namespace PSH.Physics.Collisions
+{
+	public class QuadTree
+	{
+		public Vector2 Position;
+		public Vector2 Size;
+
+		QuadTreeNode _root;
+		
+		public QuadTree(Vector2 position, Vector2 size)
+		{
+			Position = position;
+			Size = size;
+			_root = new QuadTreeNode(position, size, 0);
+		}
+
+		public void Add(CPhysics item)
+		{
+			_root.Add(item);
+		}
+
+		public void Clear()
+		{
+			_root.Clear();
+		}
+
+		public void Draw()
+		{
+			_root.Draw();
+		}
+
+
+		public List<QuadTreeNode> GetLeaves()
+		{
+			var leaves = new List<QuadTreeNode>();
+			_root.GetLeaves(leaves);
+			return leaves;
+		}
+
+
+
+
+	}
+}

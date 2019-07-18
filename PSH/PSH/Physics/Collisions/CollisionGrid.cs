@@ -11,23 +11,23 @@ namespace PSH.Physics.Collisions
 {
 	public class CollisionGrid
 	{
-		public List<CPhysics>[,] Cells;
+		public QuadTree[,] Cells;
 		
 		public readonly int Width = 10;
 		public readonly int Height = 10;
 		
-		public readonly int CellSize = 32;
+		public readonly int CellSize = 512;
 
 		Vector2 Position;
 		
 		public CollisionGrid()
 		{
-			Cells = new List<CPhysics>[Width, Height];
+			Cells = new QuadTree[Width, Height];
 			for(var y = 0; y < Height; y += 1)
 			{
 				for(var x = 0; x < Width; x += 1)
 				{
-					Cells[x, y] = new List<CPhysics>();
+					Cells[x, y] = new QuadTree(Position + new Vector2(x, y) * CellSize + Vector2.One * CellSize / 2, Vector2.One * CellSize);
 				}
 			}
 		}
@@ -69,7 +69,7 @@ namespace PSH.Physics.Collisions
 
 			if (x >= 0 && y >= 0 && x < Width && y < Height)
 			{
-				return Cells[x, y].Remove(physics);
+				//return Cells[x, y].Remove(physics);
 			}
 			return false;
 		}
@@ -96,8 +96,8 @@ namespace PSH.Physics.Collisions
 				for(var x = 0; x < Width; x += 1)
 				{
 					var center = Position + Vector2.One * CellSize / 2 + CellSize * new Vector2(x, y);
-					RectangleShape.DrawBySize(center, Vector2.One * CellSize, true);
-					Text.Draw(Cells[x, y].Count + "", center);
+					//RectangleShape.DrawBySize(center, Vector2.One * CellSize, true);
+					Cells[x, y].Draw();
 				}
 			}
 		}
