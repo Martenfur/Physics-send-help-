@@ -5,6 +5,7 @@ using Monofoxe.Engine.ECS;
 using Monofoxe.Engine.Utils;
 using PSH.Physics.Collisions;
 using PSH.Physics.Collisions.Intersections;
+using PSH.Physics.Collisions.Colliders;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,8 +20,24 @@ namespace PSH.Physics
 
 		public override int Priority => 1;
 		
-		private const float _positionCorrection = 0.4f; // 0.2 - 0.8
-		private const float _positionCorrectionSlack = 0.01f; // 0.01 - 0.1
+		/// <summary>
+		/// Rate of positional correction. Too little, and the objects will sink.
+		/// Too much, and they will jitter. Recommended to be 0.2-0.8.
+		/// </summary>
+		private const float _positionCorrection = 0.4f;
+		/// <summary>
+		/// Poitional correction slack. Positional correction doesn't apply if bodies
+		/// are sunk by this value. Recommended to be 0.01-0.1.
+		/// </summary>
+		private const float _positionCorrectionSlack = 0.01f;
+
+		/// <summary>
+		/// How many times per frame collision resolution will be performed.
+		/// Bigger value = more accurate simulation, but also bigger performance hit.
+		/// Recommended range: 1-20.
+		/// </summary>
+		private const int _resolveIterations = 1;
+
 
 		public static CollisionGrid Grid = new CollisionGrid();
 
@@ -35,6 +52,7 @@ namespace PSH.Physics
 			
 			sw.Start();
 
+			// Updating the grid.
 			Grid.Clear();
 			for (var i = 0; i < components.Count; i += 1)
 			{
@@ -43,8 +61,13 @@ namespace PSH.Physics
 				Grid.Add(physics);
 				physics.HadCollision = false;
 			}
+			// Updating the grid.
 
-			var intersections = new List<IIntersection>();
+
+			var dt = (float)TimeKeeper.GlobalTime();
+
+			// Getting all intersections and manifolds.
+			var cachedCollisions = new List<CachedCollision>();
 			foreach(var quad in Grid.Cells)
 			{
 				foreach (var leaf in quad.GetLeaves())
@@ -56,33 +79,53 @@ namespace PSH.Physics
 						for (var k = i + 1; k < leaf.Count; k += 1)
 						{
 							var otherPhysics = leaf[k];
-							var intersection = CollisionSystem.CheckCollision(physics.Collider, otherPhysics.Collider);
-							intersection.CachedA = physics;
-							intersection.CachedB = otherPhysics;
 
+							if ((physics.InverseMass + otherPhysics.InverseMass) == 0)
+								continue;
+							
+							var intersection = CollisionSystem.CheckCollision(physics.Collider, otherPhysics.Collider);
+							
 							if (intersection.Collided)
 							{
-								intersection.GenerateManifold();
-								intersections.Add(intersection);
+								var collision = new CachedCollision
+								{
+									A = physics,
+									B = otherPhysics,
+									Intersection = intersection,
+									Manifold = intersection.GenerateManifold(),
+									InvMassSum = physics.InverseMass + otherPhysics.InverseMass,
+								};
+
+								physics.HadCollision = true;
+								otherPhysics.HadCollision = true;
+
+								cachedCollisions.Add(collision);
 							}
 						}
 					}
 				}
 			}
+			// Getting all intersections and manifolds.
 
-			for (var t = 0; t < 10; t += 1)
+			// Resolving collisions.
+			var cachedCollisionsA = cachedCollisions.ToArray();
+			for (var i = 0; i < _resolveIterations; i += 1)
 			{
-				foreach(var i in intersections)
+				for(var c = 0; c < cachedCollisionsA.Length; c += 1)
 				{
-					ResolveCollision(i);
+					ResolveCollision(cachedCollisionsA[c]);
 				}
 			}
+			// Resolving collisions.
 
-			foreach (var i in intersections)
+			// Correcting positions.
+			foreach (var collsiison in cachedCollisionsA)
 			{
-				PositionalCorrection(i.CachedA, i.CachedB, i);
+				PositionalCorrection(collsiison);
 			}
+			// Correcting positions.
 
+			// Updating positions.
 			for (var i = 0; i < components.Count; i += 1)
 			{
 				var physics = (CPhysics)components[i];
@@ -92,6 +135,7 @@ namespace PSH.Physics
 				physics.Collider.Position += TimeKeeper.GlobalTime(physics.Speed);
 				position.Position = physics.Collider.Position;
 			}
+			// Updating positions.
 
 			sw.Stop();
 
@@ -102,56 +146,40 @@ namespace PSH.Physics
 			
 		}
 
-		void ResolveCollision(IIntersection i)
+		void ResolveCollision(CachedCollision collision)
 		{
 			_iterations += 1;
 
-			var obj1 = i.CachedA;
-			var obj2 = i.CachedB;
-
-			var speedDelta = TimeKeeper.GlobalTime(obj1.Speed - obj2.Speed);
+			var a = collision.A;
+			var b = collision.B;
 			
-			obj1.HadCollision = true;
-			obj2.HadCollision = true;
-			
+			var speedDelta = a.Speed - b.Speed;
 
-			var dotProduct = Vector2.Dot(speedDelta, i.Manifold.Direction);
+			var dotProduct = Vector2.Dot(speedDelta, collision.Manifold.Direction);
 
 			// Do not push, if shapes are separating.
 			if (dotProduct < 0)
 			{
 				return;
 			}
-
-			var invMassSum = obj1.InverseMass + obj2.InverseMass;
-			var l = Vector2.Zero;
-
-			if (invMassSum != 0)
-			{
-				// TODO: Add bounciness.
-				l = (1 * i.Manifold.Direction * dotProduct) / invMassSum; 
-				l /= (float)TimeKeeper.GlobalTime();
-			}
 			
-			obj1.Speed -= l * obj1.InverseMass;
-			obj2.Speed += l * obj2.InverseMass;
+			// TODO: Add bounciness.
+			var l = (1 * collision.Manifold.Direction * dotProduct) / collision.InvMassSum;
+			
+			a.Speed -= l * a.InverseMass;
+			b.Speed += l * b.InverseMass;
 		}
 
 		/// <summary>
 		/// Pushes bodies out of each other.
 		/// </summary>
-		void PositionalCorrection(CPhysics obj1, CPhysics obj2, IIntersection i)
+		void PositionalCorrection(CachedCollision collision)
 		{
-			var invMassSum = obj1.InverseMass + obj2.InverseMass;
-			if (invMassSum == 0)
-			{
-				return;
-			}
-
-			var correction = Math.Max(i.Manifold.Depth - _positionCorrectionSlack, 0) / invMassSum * _positionCorrection * i.Manifold.Direction;
+			var correction = Math.Max(collision.Manifold.Depth - _positionCorrectionSlack, 0) 
+				/ collision.InvMassSum * _positionCorrection * collision.Manifold.Direction;
 			
-			obj1.Collider.Position -= correction * obj1.InverseMass;
-			obj2.Collider.Position += correction * obj2.InverseMass;
+			collision.A.Collider.Position -= correction * collision.A.InverseMass;
+			collision.B.Collider.Position += correction * collision.B.InverseMass;
 		}
 
 		public override void Draw(Component component)
@@ -182,6 +210,28 @@ namespace PSH.Physics
 			physics.Collider.Draw(true);
 
 		}
+
+		public static bool GetCollision(CPhysics owner, ICollider collider)
+		{
+			foreach (var quad in Grid.Cells)
+			{
+				foreach (var leaf in quad.GetLeaves())
+				{
+					for (var i = 0; i < leaf.Count; i += 1)
+					{
+						var physics = leaf[i];
+
+						if (physics != owner && CollisionSystem.CheckCollision(collider, physics.Collider).Collided)
+						{
+							Console.WriteLine("Got one!");
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		}
+
 
 	}
 }

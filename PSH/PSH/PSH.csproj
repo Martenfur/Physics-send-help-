@@ -42,6 +42,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Physics\CachedCollision.cs" />
     <Compile Include="Physics\Collisions\CollisionGrid.cs" />
     <Compile Include="Physics\Collisions\Intersections\IIntersection.cs" />
     <Compile Include="Physics\Collisions\Manifold.cs" />

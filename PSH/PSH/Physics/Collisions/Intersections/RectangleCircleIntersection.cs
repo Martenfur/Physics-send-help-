@@ -10,12 +10,7 @@ namespace PSH.Physics.Collisions.Intersections
 		public bool Collided {get; private set;}
 		public ICollider A {get; private set;}
 		public ICollider B {get; private set;}
-
-		public CPhysics CachedA { get; set; }
-		public CPhysics CachedB { get; set; }
-
-		public Manifold Manifold { get; set; }
-
+		
 		Vector2 _delta;
 
 		Vector2 _closestCorner;
@@ -46,9 +41,6 @@ namespace PSH.Physics.Collisions.Intersections
 			_inside = inside;
 			_normal = normal;
 			_normalLengthSquared = normalLengthSquared;
-			CachedA = null;
-			CachedB = null;
-			Manifold = default(Manifold);
 		}
 
 		public Manifold GenerateManifold()
@@ -78,8 +70,6 @@ namespace PSH.Physics.Collisions.Intersections
 				manifold.Depth = ((CircleCollider)B).Radius - normalLength;
 			}
 			
-			Manifold = manifold;
-
 			return manifold;
 		}
 

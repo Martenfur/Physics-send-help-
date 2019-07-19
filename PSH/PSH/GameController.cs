@@ -36,8 +36,26 @@ namespace PSH
 			CollisionSystem.Init();
 
 			CircleShape.CircleVerticesCount = 8;
+
+
+			var s1 = 8f;
+			var s2 = 10f;
+			var l = 3f;
+			var ma = 20f;
+			var mb = 15f;
+			var dt = 0.2f;
+
+			var ss1 = s1 - l * ma;
+			var ss2 = s2 + l * mb;
+
+			var ds1 = dt * (ss1 - ss2);
+			var dsp = dt * (s1 - s2);
+			var ds2 = dsp - dt * l * (ma + mb);
+
+			System.Console.WriteLine("d1: " + ds1 + " d2: " + ds2);
+
 		}
-		
+
 		public override void Update()
 		{
 			if (Input.CheckButtonPress(Buttons.B) || Input.CheckButton(Buttons.M))
