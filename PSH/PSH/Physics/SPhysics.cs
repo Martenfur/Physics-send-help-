@@ -9,7 +9,9 @@ using PSH.Physics.Collisions.Intersections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Threading;
+
 
 namespace PSH.Physics
 {
@@ -50,19 +52,8 @@ namespace PSH.Physics
 
 		public static void InitPhysics()
 		{
-			for(var i = 0; i < _threadCount; i += 1)
-			{
-				//_threadPool.Add(new Thread(GetCollisions));
-				
-			}
-			var a = 0;
-			var b = 0;
-			ThreadPool.GetMinThreads(out a, out b);
-			//ThreadPool.SetMinThreads(1, 1);
-			//ThreadPool.SetMaxThreads(1, 1);
-
-			Console.WriteLine(a + " : " + b);
-
+			
+			
 		}
 
 		public override void FixedUpdate(List<Component> components)
@@ -111,6 +102,7 @@ namespace PSH.Physics
 
 			var events = new ManualResetEvent[quads.Count];
 			var threadId = 0;
+			/*
 			foreach (var quad in quads)
 			{
 				var t = threadId;
@@ -139,7 +131,22 @@ namespace PSH.Physics
 			{
 				ev.WaitOne();
 				ev.Dispose();
-			}
+			}*/
+			
+			Parallel.ForEach(quads,
+				(quad, state, index) => {
+					GetCollisions(threadLists[(int)index], quad);
+				}
+			);
+			
+			/*
+			var index = 0;
+			foreach(var quad in quads)
+			{
+				GetCollisions(threadLists[(int)index], quad);
+				index += 1;
+			}*/
+			
 			watch0.Stop();
 			Console.Write("Total time: " + watch0.ElapsedTicks);
 			
@@ -243,6 +250,7 @@ namespace PSH.Physics
 
 			var a = collision.A;
 			var b = collision.B;
+			if (a == null || b == null) return;
 
 			var speedDelta = a.Speed - b.Speed;
 
@@ -268,6 +276,8 @@ namespace PSH.Physics
 		{
 			var correction = Math.Max(collision.Manifold.Depth - _positionCorrectionSlack, 0)
 				/ collision.InvMassSum * _positionCorrection * collision.Manifold.Direction;
+
+			if (collision.A == null || collision.B == null) return;
 
 			collision.A.Collider.Position -= correction * collision.A.InverseMass;
 			collision.B.Collider.Position += correction * collision.B.InverseMass;

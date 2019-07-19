@@ -16,7 +16,7 @@ namespace PSH.Physics.Collisions
 		public readonly int Width = 10;
 		public readonly int Height = 10;
 		
-		public readonly int CellSize = 1024;
+		public readonly int CellSize = 512;
 
 		Vector2 Position;
 		
