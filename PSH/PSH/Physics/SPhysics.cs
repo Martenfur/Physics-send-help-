@@ -4,12 +4,12 @@ using Monofoxe.Engine.Drawing;
 using Monofoxe.Engine.ECS;
 using Monofoxe.Engine.Utils;
 using PSH.Physics.Collisions;
-using PSH.Physics.Collisions.Intersections;
 using PSH.Physics.Collisions.Colliders;
+using PSH.Physics.Collisions.Intersections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
+using System.Threading;
 
 namespace PSH.Physics
 {
@@ -19,7 +19,7 @@ namespace PSH.Physics
 		private Type _componentType = typeof(CPhysics);
 
 		public override int Priority => 1;
-		
+
 		/// <summary>
 		/// Rate of positional correction. Too little, and the objects will sink.
 		/// Too much, and they will jitter. Recommended to be 0.2-0.8.
@@ -45,11 +45,31 @@ namespace PSH.Physics
 
 		private bool _flipflop = false;
 
+		
+		const int _threadCount = 4;
+
+		public static void InitPhysics()
+		{
+			for(var i = 0; i < _threadCount; i += 1)
+			{
+				//_threadPool.Add(new Thread(GetCollisions));
+				
+			}
+			var a = 0;
+			var b = 0;
+			ThreadPool.GetMinThreads(out a, out b);
+			//ThreadPool.SetMinThreads(1, 1);
+			//ThreadPool.SetMaxThreads(1, 1);
+
+			Console.WriteLine(a + " : " + b);
+
+		}
+
 		public override void FixedUpdate(List<Component> components)
 		{
 			var sw = new Stopwatch();
 			_iterations = 0;
-			
+
 			sw.Start();
 
 			// Updating the grid.
@@ -67,51 +87,76 @@ namespace PSH.Physics
 			var dt = (float)TimeKeeper.GlobalTime();
 
 			// Getting all intersections and manifolds.
-			var cachedCollisions = new List<CachedCollision>();
-			foreach(var quad in Grid.Cells)
+			var quads = new List<QuadTree>();
+			foreach (var quad in Grid.Cells) // TODO: Replace.
 			{
-				foreach (var leaf in quad.GetLeaves())
+				if (quad.Count > 0)
 				{
-					for (var i = 0; i < leaf.Count - 1; i += 1)
-					{
-						var physics = leaf[i];
-	
-						for (var k = i + 1; k < leaf.Count; k += 1)
-						{
-							var otherPhysics = leaf[k];
-
-							if ((physics.InverseMass + otherPhysics.InverseMass) == 0)
-								continue;
-							
-							var intersection = CollisionSystem.CheckCollision(physics.Collider, otherPhysics.Collider);
-							
-							if (intersection.Collided)
-							{
-								var collision = new CachedCollision
-								{
-									A = physics,
-									B = otherPhysics,
-									Intersection = intersection,
-									Manifold = intersection.GenerateManifold(),
-									InvMassSum = physics.InverseMass + otherPhysics.InverseMass,
-								};
-
-								physics.HadCollision = true;
-								otherPhysics.HadCollision = true;
-
-								cachedCollisions.Add(collision);
-							}
-						}
-					}
+					quads.Add(quad);
 				}
 			}
+
+			
+			var cachedCollisions = new List<CachedCollision>();
+			
+			var threadLists = new List<List<CachedCollision>>();
+
+			for(var i = 0; i < quads.Count; i += 1)
+			{
+				threadLists.Add(new List<CachedCollision>());
+			}
+			Console.WriteLine("--------------------------");
+			var watch0 = new Stopwatch();
+			watch0.Start();
+
+			var events = new ManualResetEvent[quads.Count];
+			var threadId = 0;
+			foreach (var quad in quads)
+			{
+				var t = threadId;
+				events[t] = new ManualResetEvent(false);
+				ThreadPool.QueueUserWorkItem(
+					x => {
+						var watch1 = new Stopwatch();
+						var watch2 = new Stopwatch();
+
+						watch1.Start();
+						GetCollisions(threadLists[t], quad);
+						watch1.Stop();
+
+						watch2.Start();
+						events[t].Set();
+						watch2.Stop();
+						
+						Console.WriteLine("t" + t + ": " + watch1.ElapsedTicks + " set: " + watch2.ElapsedTicks + " count: " + quad.Count);
+					}, 
+					threadId
+				);
+				
+				threadId += 1;
+			}
+			foreach(var ev in events)
+			{
+				ev.WaitOne();
+				ev.Dispose();
+			}
+			watch0.Stop();
+			Console.Write("Total time: " + watch0.ElapsedTicks);
+			
+			for (var i = 0; i < quads.Count; i += 1)
+			{
+				var t = threadLists[i];
+				cachedCollisions.AddRange(t);
+			}
+
+
 			// Getting all intersections and manifolds.
 
 			// Resolving collisions.
 			var cachedCollisionsA = cachedCollisions.ToArray();
 			for (var i = 0; i < _resolveIterations; i += 1)
 			{
-				for(var c = 0; c < cachedCollisionsA.Length; c += 1)
+				for (var c = 0; c < cachedCollisionsA.Length; c += 1)
 				{
 					ResolveCollision(cachedCollisionsA[c]);
 				}
@@ -139,12 +184,58 @@ namespace PSH.Physics
 
 			sw.Stop();
 
-			GameMgr.WindowManager.WindowTitle = "fps: " + GameMgr.Fps 
-				+ ", iterations: " + _iterations 
-				+ ", time: " + sw.ElapsedTicks 
+			GameMgr.WindowManager.WindowTitle = "fps: " + GameMgr.Fps
+				+ ", iterations: " + _iterations
+				+ ", time: " + sw.ElapsedTicks
 				+ ", bodies: " + components.Count;
-			
+
 		}
+
+
+		static void GetCollisions(//object arg)
+		List<CachedCollision> collisions, QuadTree quad)
+		{
+			//var tuple = (Tuple<List<CachedCollision>, QuadTree>)arg;
+			//var collisions = tuple.Item1;
+			//var quad = tuple.Item2;
+
+
+			foreach (var leaf in quad.GetLeaves())
+			{
+				for (var i = 0; i < leaf.Count - 1; i += 1)
+				{
+					var physics = leaf[i];
+
+					for (var k = i + 1; k < leaf.Count; k += 1)
+					{
+						var otherPhysics = leaf[k];
+
+						if ((physics.InverseMass + otherPhysics.InverseMass) == 0)
+							continue;
+
+						var intersection = CollisionSystem.CheckCollision(physics.Collider, otherPhysics.Collider);
+
+						if (intersection.Collided)
+						{
+							var collision = new CachedCollision
+							{
+								A = physics,
+								B = otherPhysics,
+								Intersection = intersection,
+								Manifold = intersection.GenerateManifold(),
+								InvMassSum = physics.InverseMass + otherPhysics.InverseMass,
+							};
+
+							physics.HadCollision = true;
+							otherPhysics.HadCollision = true;
+
+							collisions.Add(collision);
+						}
+					}
+				}
+			}
+		}
+
 
 		void ResolveCollision(CachedCollision collision)
 		{
@@ -152,7 +243,7 @@ namespace PSH.Physics
 
 			var a = collision.A;
 			var b = collision.B;
-			
+
 			var speedDelta = a.Speed - b.Speed;
 
 			var dotProduct = Vector2.Dot(speedDelta, collision.Manifold.Direction);
@@ -162,10 +253,10 @@ namespace PSH.Physics
 			{
 				return;
 			}
-			
+
 			// TODO: Add bounciness.
 			var l = (1 * collision.Manifold.Direction * dotProduct) / collision.InvMassSum;
-			
+
 			a.Speed -= l * a.InverseMass;
 			b.Speed += l * b.InverseMass;
 		}
@@ -175,12 +266,13 @@ namespace PSH.Physics
 		/// </summary>
 		void PositionalCorrection(CachedCollision collision)
 		{
-			var correction = Math.Max(collision.Manifold.Depth - _positionCorrectionSlack, 0) 
+			var correction = Math.Max(collision.Manifold.Depth - _positionCorrectionSlack, 0)
 				/ collision.InvMassSum * _positionCorrection * collision.Manifold.Direction;
-			
+
 			collision.A.Collider.Position -= correction * collision.A.InverseMass;
 			collision.B.Collider.Position += correction * collision.B.InverseMass;
 		}
+
 
 		public override void Draw(Component component)
 		{

@@ -24,7 +24,7 @@ namespace PSH
 			GameMgr.FixedUpdateRate = 1.0 / 60.0;
 
 			cam.BackgroundColor = new Color(38, 38, 38);
-
+			cam.Zoom = 0.5f;
 			GameMgr.WindowManager.CanvasSize = new Vector2(1200, 800);
 			GameMgr.WindowManager.Window.AllowUserResizing = false;
 			GameMgr.WindowManager.ApplyChanges();
@@ -33,6 +33,7 @@ namespace PSH
 			
 			GraphicsMgr.Sampler = SamplerState.PointClamp;
 
+			SPhysics.InitPhysics();
 			CollisionSystem.Init();
 
 			CircleShape.CircleVerticesCount = 8;
@@ -60,7 +61,7 @@ namespace PSH
 		{
 			if (Input.CheckButtonPress(Buttons.B) || Input.CheckButton(Buttons.M))
 			{
-				new Player(Layer, Input.MousePosition);
+				new Player(Layer, cam.GetRelativeMousePosition());
 			}
 			if (Input.CheckButtonPress(Buttons.N))
 			{

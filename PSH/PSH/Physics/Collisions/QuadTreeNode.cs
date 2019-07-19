@@ -12,7 +12,7 @@ namespace PSH.Physics.Collisions
 	public class QuadTreeNode : IEnumerable<CPhysics>
 	{
 		const int _itemLimit = 5;
-		const int _depthLimit = 3;
+		const int _depthLimit = 4;
 
 		readonly int _depth;
 

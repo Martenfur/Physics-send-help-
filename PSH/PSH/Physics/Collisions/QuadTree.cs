@@ -14,6 +14,8 @@ namespace PSH.Physics.Collisions
 
 		QuadTreeNode _root;
 		
+		public int Count {get; private set;}
+
 		public QuadTree(Vector2 position, Vector2 size)
 		{
 			Position = position;
@@ -24,11 +26,13 @@ namespace PSH.Physics.Collisions
 		public void Add(CPhysics item)
 		{
 			_root.Add(item);
+			Count += 1;
 		}
 
 		public void Clear()
 		{
 			_root.Clear();
+			Count = 0;
 		}
 
 		public void Draw()
