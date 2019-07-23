@@ -24,7 +24,7 @@ namespace PSH
 			GameMgr.FixedUpdateRate = 1.0 / 60.0;
 
 			cam.BackgroundColor = new Color(38, 38, 38);
-			cam.Zoom = 0.5f;
+			cam.Zoom = 1;//0.5f;
 			GameMgr.WindowManager.CanvasSize = new Vector2(1200, 800);
 			GameMgr.WindowManager.Window.AllowUserResizing = false;
 			GameMgr.WindowManager.ApplyChanges();
@@ -32,11 +32,10 @@ namespace PSH
 			GameMgr.WindowManager.CanvasMode = CanvasMode.Fill;
 			
 			GraphicsMgr.Sampler = SamplerState.PointClamp;
-
-			SPhysics.InitPhysics();
+			
 			CollisionSystem.Init();
 
-			CircleShape.CircleVerticesCount = 8;
+			CircleShape.CircleVerticesCount = 16;
 
 
 			var s1 = 8f;
@@ -61,7 +60,12 @@ namespace PSH
 		{
 			if (Input.CheckButtonPress(Buttons.B) || Input.CheckButton(Buttons.M))
 			{
-				new Player(Layer, cam.GetRelativeMousePosition());
+				var p = new Player(Layer, cam.GetRelativeMousePosition());
+				if (Input.CheckButtonPress(Buttons.B))
+				{
+					var phy = p.GetComponent<CPhysics>();
+					phy.Elasticity = 1;
+				}
 			}
 			if (Input.CheckButtonPress(Buttons.N))
 			{
@@ -74,9 +78,9 @@ namespace PSH
 					size = new Vector2(500, 32);
 				}
 
-				var collider = new RectangleCollider(Input.MousePosition, size);
+				var collider = new RectangleCollider(cam.GetRelativeMousePosition(), size);
 
-				e.AddComponent(new CPosition(Input.MousePosition));
+				e.AddComponent(new CPosition(collider.Position));
 				e.AddComponent(new CPhysics { Collider = collider, Mass = 0});
 			}
 
@@ -107,7 +111,7 @@ namespace PSH
 			}
 			*/
 			GraphicsMgr.CurrentColor = Color.Beige * 0.7f;
-			SPhysics.Grid.Draw();
+			//SPhysics.Grid.Draw();
 
 		}
 

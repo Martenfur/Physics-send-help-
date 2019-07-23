@@ -45,7 +45,7 @@ namespace PSH.Test
 			
 			var physics = GetComponent<CPhysics>();
 
-			if (Input.CheckButton(Buttons.MouseLeft))
+			if (Input.CheckButton(Buttons.MouseLeft) && physics.Elasticity > 0)
 			{
 				var position = GetComponent<CPosition>();
 
@@ -68,7 +68,7 @@ namespace PSH.Test
 			);
 
 			//if (!SPhysics.GetCollision(physics, collider))
-				//physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
+			//physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
 			
 			
 			if (physics.Speed.Y > _speed)

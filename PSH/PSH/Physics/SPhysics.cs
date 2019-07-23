@@ -38,7 +38,7 @@ namespace PSH.Physics
 		/// Bigger value = more accurate simulation, but also bigger performance hit.
 		/// Recommended range: 1-20.
 		/// </summary>
-		private const int _resolveIterations = 1;
+		private int _resolveIterations = 20;
 
 
 		public static CollisionGrid Grid = new CollisionGrid();
@@ -50,10 +50,14 @@ namespace PSH.Physics
 		
 		const int _threadCount = 4;
 
-		public static void InitPhysics()
+		bool _useParallel = true;
+
+		public override void Create(Component component)
 		{
-			
-			
+			// Caching the position to reduce GetComponent calls.
+			var physics = (CPhysics)component;
+			var position = physics.Owner.GetComponent<CPosition>();
+			physics.PositionComponent = position;
 		}
 
 		public override void FixedUpdate(List<Component> components)
@@ -74,9 +78,6 @@ namespace PSH.Physics
 			}
 			// Updating the grid.
 
-
-			var dt = (float)TimeKeeper.GlobalTime();
-
 			// Getting all intersections and manifolds.
 			var quads = new List<QuadTree>();
 			foreach (var quad in Grid.Cells) // TODO: Replace.
@@ -88,92 +89,56 @@ namespace PSH.Physics
 			}
 
 			
-			var cachedCollisions = new List<CachedCollision>();
-			
-			var threadLists = new List<List<CachedCollision>>();
+			var cachedCollisions = new List<List<CachedCollision>>();
 
 			for(var i = 0; i < quads.Count; i += 1)
 			{
-				threadLists.Add(new List<CachedCollision>());
+				cachedCollisions.Add(new List<CachedCollision>());
 			}
-			Console.WriteLine("--------------------------");
-			var watch0 = new Stopwatch();
-			watch0.Start();
-
-			var events = new ManualResetEvent[quads.Count];
-			var threadId = 0;
-			/*
-			foreach (var quad in quads)
+			
+			if (_useParallel)
 			{
-				var t = threadId;
-				events[t] = new ManualResetEvent(false);
-				ThreadPool.QueueUserWorkItem(
-					x => {
-						var watch1 = new Stopwatch();
-						var watch2 = new Stopwatch();
-
-						watch1.Start();
-						GetCollisions(threadLists[t], quad);
-						watch1.Stop();
-
-						watch2.Start();
-						events[t].Set();
-						watch2.Stop();
-						
-						Console.WriteLine("t" + t + ": " + watch1.ElapsedTicks + " set: " + watch2.ElapsedTicks + " count: " + quad.Count);
-					}, 
-					threadId
+				Parallel.ForEach(
+					quads,
+					(quad, state, index) => {
+						GetCollisions(cachedCollisions[(int)index], quad);
+					}
 				);
-				
-				threadId += 1;
 			}
-			foreach(var ev in events)
+			else
 			{
-				ev.WaitOne();
-				ev.Dispose();
-			}*/
-			
-			Parallel.ForEach(quads,
-				(quad, state, index) => {
-					GetCollisions(threadLists[(int)index], quad);
+				for(var i = 0; i < quads.Count; i += 1)
+				{
+					GetCollisions(cachedCollisions[i], quads[i]);
 				}
-			);
-			
-			/*
-			var index = 0;
-			foreach(var quad in quads)
-			{
-				GetCollisions(threadLists[(int)index], quad);
-				index += 1;
-			}*/
-			
-			watch0.Stop();
-			Console.Write("Total time: " + watch0.ElapsedTicks);
-			
-			for (var i = 0; i < quads.Count; i += 1)
-			{
-				var t = threadLists[i];
-				cachedCollisions.AddRange(t);
 			}
-
-
+			
 			// Getting all intersections and manifolds.
 
 			// Resolving collisions.
-			var cachedCollisionsA = cachedCollisions.ToArray();
-			for (var i = 0; i < _resolveIterations; i += 1)
+			for(var i = 0; i < _resolveIterations; i += 1) 
 			{
-				for (var c = 0; c < cachedCollisionsA.Length; c += 1)
+				// Doing collision resolving multiple times over and over again
+				// improves sim results.
+				for(var l = 0; l < cachedCollisions.Count; l += 1)
 				{
-					ResolveCollision(cachedCollisionsA[c]);
+					var list = cachedCollisions[l];
+					for(var c = 0; c < list.Count; c += 1)
+					{
+						ResolveCollision(list[c]);
+					}
 				}
 			}
 			// Resolving collisions.
 
 			// Correcting positions.
-			foreach (var collsiison in cachedCollisionsA)
+			for (var l = 0; l < cachedCollisions.Count; l += 1)
 			{
-				PositionalCorrection(collsiison);
+				var list = cachedCollisions[l];
+				for (var c = 0; c < list.Count; c += 1)
+				{
+					PositionalCorrection(list[c]);
+				}
 			}
 			// Correcting positions.
 
@@ -181,11 +146,9 @@ namespace PSH.Physics
 			for (var i = 0; i < components.Count; i += 1)
 			{
 				var physics = (CPhysics)components[i];
-
-				var position = physics.Owner.GetComponent<CPosition>();
-
+				
 				physics.Collider.Position += TimeKeeper.GlobalTime(physics.Speed);
-				position.Position = physics.Collider.Position;
+				physics.PositionComponent.Position = physics.Collider.Position;
 			}
 			// Updating positions.
 
@@ -194,7 +157,8 @@ namespace PSH.Physics
 			GameMgr.WindowManager.WindowTitle = "fps: " + GameMgr.Fps
 				+ ", iterations: " + _iterations
 				+ ", time: " + sw.ElapsedTicks
-				+ ", bodies: " + components.Count;
+				+ ", bodies: " + components.Count
+				+ ", parallel: " + _useParallel;
 
 		}
 
@@ -206,9 +170,10 @@ namespace PSH.Physics
 			//var collisions = tuple.Item1;
 			//var quad = tuple.Item2;
 
-
-			foreach (var leaf in quad.GetLeaves())
+			var leaves = quad.GetLeaves();
+			for (var leafId = 0; leafId < leaves.Count; leafId += 1)
 			{
+				var leaf = leaves[leafId];
 				for (var i = 0; i < leaf.Count - 1; i += 1)
 				{
 					var physics = leaf[i];
@@ -217,20 +182,23 @@ namespace PSH.Physics
 					{
 						var otherPhysics = leaf[k];
 
-						if ((physics.InverseMass + otherPhysics.InverseMass) == 0)
+						if ((physics.InverseMass + otherPhysics.InverseMass) == 0) // TODO: Remove.
 							continue;
 
 						var intersection = CollisionSystem.CheckCollision(physics.Collider, otherPhysics.Collider);
 
 						if (intersection.Collided)
 						{
+							// Calculating some collision data right away, since it will be reused multiple times.
+							var manifold = intersection.GenerateManifold();
 							var collision = new CachedCollision
 							{
 								A = physics,
 								B = otherPhysics,
 								Intersection = intersection,
-								Manifold = intersection.GenerateManifold(),
+								Manifold = manifold,
 								InvMassSum = physics.InverseMass + otherPhysics.InverseMass,
+								ElasticityDirection = (1 + (physics.Elasticity + otherPhysics.Elasticity) / 2f) * manifold.Direction,
 							};
 
 							physics.HadCollision = true;
@@ -250,8 +218,7 @@ namespace PSH.Physics
 
 			var a = collision.A;
 			var b = collision.B;
-			if (a == null || b == null) return;
-
+			
 			var speedDelta = a.Speed - b.Speed;
 
 			var dotProduct = Vector2.Dot(speedDelta, collision.Manifold.Direction);
@@ -261,23 +228,22 @@ namespace PSH.Physics
 			{
 				return;
 			}
-
-			// TODO: Add bounciness.
-			var l = (1 * collision.Manifold.Direction * dotProduct) / collision.InvMassSum;
+			
+			var l = (collision.ElasticityDirection * dotProduct) / collision.InvMassSum;
 
 			a.Speed -= l * a.InverseMass;
 			b.Speed += l * b.InverseMass;
 		}
 
 		/// <summary>
-		/// Pushes bodies out of each other.
+		/// Pushes the bodies out of each other.
+		/// Due to float errors just assigning speeds is not enough.
+		/// Positional correction eliminates most of the ovelapping.
 		/// </summary>
 		void PositionalCorrection(CachedCollision collision)
 		{
 			var correction = Math.Max(collision.Manifold.Depth - _positionCorrectionSlack, 0)
 				/ collision.InvMassSum * _positionCorrection * collision.Manifold.Direction;
-
-			if (collision.A == null || collision.B == null) return;
 
 			collision.A.Collider.Position -= correction * collision.A.InverseMass;
 			collision.B.Collider.Position += correction * collision.B.InverseMass;
@@ -289,7 +255,7 @@ namespace PSH.Physics
 			var physics = (CPhysics)component;
 			var position = physics.Owner.GetComponent<CPosition>();
 
-			if (physics.HadCollision)
+			if (false)//physics.HadCollision)
 			{
 				GraphicsMgr.CurrentColor = Color.Red * 0.5f;
 			}
@@ -309,12 +275,13 @@ namespace PSH.Physics
 				GraphicsMgr.CurrentColor = Color.White;
 			}
 
-			physics.Collider.Draw(true);
+			//physics.Collider.Draw(true);
 
 		}
 
 		public static bool GetCollision(CPhysics owner, ICollider collider)
 		{
+			// TODO: Replace this with something decent.
 			foreach (var quad in Grid.Cells)
 			{
 				foreach (var leaf in quad.GetLeaves())

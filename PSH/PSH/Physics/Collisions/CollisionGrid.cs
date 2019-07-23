@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine.Drawing;
-using Monofoxe.Engine;
+using System.Collections.Generic;
 
 namespace PSH.Physics.Collisions
 {
 	public class CollisionGrid
 	{
 		public QuadTree[,] Cells;
-		
+		public List<QuadTree> FilledCells;
+
 		public readonly int Width = 10;
 		public readonly int Height = 10;
 		
@@ -30,6 +26,8 @@ namespace PSH.Physics.Collisions
 					Cells[x, y] = new QuadTree(Position + new Vector2(x, y) * CellSize + Vector2.One * CellSize / 2, Vector2.One * CellSize);
 				}
 			}
+
+			FilledCells = new List<QuadTree>();
 		}
 
 
@@ -45,6 +43,10 @@ namespace PSH.Physics.Collisions
 					if (InBounds(new Point(x, y)))
 					{
 						Cells[x, y].Add(physics);
+						if (!FilledCells.Contains(Cells[x, y]))
+						{
+							FilledCells.Add(Cells[x, y]);
+						}
 					}
 				}
 			}

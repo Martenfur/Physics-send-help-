@@ -36,6 +36,13 @@ namespace PSH.Physics
 
 		public bool HadCollision = false;
 
+
+		/// <summary>
+		/// Bounciness of the body.
+		/// </summary>
+		public float Elasticity = 0f;
+		public CPosition PositionComponent;
+		
 		public CPhysics()
 		{
 			Visible = true;
