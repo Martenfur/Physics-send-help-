@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine.Drawing;
+using System.Collections.Generic;
 
 namespace PSH.Physics.Collisions
 {
-	public class QuadTreeNode : IEnumerable<CPhysics>
+	public class QuadTreeNode
 	{
 		const int _itemLimit = 5;
 		const int _depthLimit = 3;
@@ -20,7 +15,16 @@ namespace PSH.Physics.Collisions
 
 		public bool IsLeaf {get; private set;} = true; 
 
+		/// <summary>
+		/// List of all items with non-zero mass. 
+		/// </summary>
 		List<CPhysics> _items = new List<CPhysics>();
+
+		/// <summary>
+		/// List of all items with zero mass.
+		/// </summary>
+		List<CPhysics> _immovableItems = new List<CPhysics>();
+
 
 		public Vector2 Position;
 		public Vector2 Size;
@@ -34,6 +38,9 @@ namespace PSH.Physics.Collisions
 			new Vector2(-1, -1),
 		};
 
+		public int ItemsCount => _items.Count;
+		public int ImmovableItemsCount => _immovableItems.Count;
+
 
 		public QuadTreeNode(Vector2 position, Vector2 size, int depth)
 		{
@@ -46,9 +53,16 @@ namespace PSH.Physics.Collisions
 		{
 			if (IsLeaf)
 			{
-				_items.Add(item);
+				if (item.Immovable)
+				{
+					_immovableItems.Add(item);
+				}
+				else
+				{
+					_items.Add(item);
+				}
 
-				if (_items.Count > _itemLimit && _depth < _depthLimit)
+				if ((ItemsCount + ImmovableItemsCount) > _itemLimit && _depth < _depthLimit)
 				{
 					Split();
 				}
@@ -63,15 +77,23 @@ namespace PSH.Physics.Collisions
 		{
 			_childNodes = null;
 			_items.Clear();
+			_immovableItems.Clear();
 			IsLeaf = true;
 		}
+
+
+		public CPhysics GetItem(int i) => _items[i];
+
+		public CPhysics GetImmovableItem(int i) => _immovableItems[i];
+
+
 
 		public void Draw()
 		{
 			RectangleShape.DrawBySize(Position, Size, true);
 			if (IsLeaf)
 			{
-				Text.Draw(_items.Count + "", Position);
+				Text.Draw((_items.Count + _immovableItems.Count) + "", Position);
 			}
 			else
 			{
@@ -93,9 +115,13 @@ namespace PSH.Physics.Collisions
 				_childNodes[i] = new QuadTreeNode(Position + _rotation[i] * Size / 4f, Size / 2f, _depth + 1);
 			}
 
-			foreach(var item in _items)
+			for(var i = 0; i < _items.Count; i += 1)
 			{
-				AddToChildren(item);
+				AddToChildren(_items[i]);
+			}
+			for (var i = 0; i < _immovableItems.Count; i += 1)
+			{
+				AddToChildren(_immovableItems[i]);
 			}
 
 
@@ -143,20 +169,6 @@ namespace PSH.Physics.Collisions
 				}
 			}
 		}
-
-		public CPhysics this[int i]
-		{
-			get => _items[i];
-			set => _items[i] = value; 
-		}
-
-		public int Count => _items.Count;
-
-		public IEnumerator<CPhysics> GetEnumerator() =>
-			_items.GetEnumerator();
-
-		IEnumerator IEnumerable.GetEnumerator() =>
-			 _items.GetEnumerator();
 		
 	}
 }

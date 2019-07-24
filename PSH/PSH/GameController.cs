@@ -53,7 +53,7 @@ namespace PSH
 			var ds2 = dsp - dt * l * (ma + mb);
 
 			System.Console.WriteLine("d1: " + ds1 + " d2: " + ds2);
-
+			
 		}
 
 		public override void Update()
@@ -61,10 +61,11 @@ namespace PSH
 			if (Input.CheckButtonPress(Buttons.B) || Input.CheckButton(Buttons.M))
 			{
 				var p = new Player(Layer, cam.GetRelativeMousePosition());
+				var phy = p.GetComponent<CPhysics>();
+				phy.DirectionalElasticity = Vector2.UnitY;
 				if (Input.CheckButtonPress(Buttons.B))
 				{
-					var phy = p.GetComponent<CPhysics>();
-					phy.Elasticity = 1;
+					//phy.Ghost = true;
 				}
 			}
 			if (Input.CheckButtonPress(Buttons.N))

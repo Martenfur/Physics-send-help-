@@ -13,17 +13,21 @@ namespace PSH.Test
 	{
 		float _speed = 300;
 
+		float _maxFallSpeed = 3000;
+
+
 		static RandomExt _r = new RandomExt();
 
 		public Player(Layer layer, Vector2 position) : base(layer)
 		{
 			ICollider collider;
 
-			if (_r.Next(2) == 0)
+			if (true)//_r.Next(2) == 0)
 			{
 				collider = new RectangleCollider(
 					position, 
-					new Vector2(_r.Next(32, 64), _r.Next(32, 64)) / 2f
+					Vector2.One * 32
+					//new Vector2(_r.Next(32, 64), _r.Next(32, 64)) / 2f
 				);
 			}
 			else
@@ -33,8 +37,6 @@ namespace PSH.Test
 					_r.Next(16, 48) / 2f
 				);
 			}
-
-			_speed = 200;//_r.Next(100, 2000);
 			
 			AddComponent(new CPosition(position));
 			AddComponent(new CPhysics{Collider = collider, Mass = 1});
@@ -45,7 +47,7 @@ namespace PSH.Test
 			
 			var physics = GetComponent<CPhysics>();
 
-			if (Input.CheckButton(Buttons.MouseLeft) && physics.Elasticity > 0)
+			if (Input.CheckButton(Buttons.MouseLeft))// && physics.Elasticity > 0)
 			{
 				var position = GetComponent<CPosition>();
 
@@ -68,12 +70,12 @@ namespace PSH.Test
 			);
 
 			//if (!SPhysics.GetCollision(physics, collider))
-			//physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
+			physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
 			
 			
-			if (physics.Speed.Y > _speed)
+			if (physics.Speed.Y > _maxFallSpeed)
 			{
-				physics.Speed.Y = _speed;
+				physics.Speed.Y = _maxFallSpeed;
 			}
 		}
 

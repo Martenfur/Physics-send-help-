@@ -32,15 +32,22 @@ namespace PSH.Physics
 		}
 		public float InverseMass {get; private set;}
 
+		public bool Immovable => (InverseMass == 0);
+
 		public ICollider Collider;
 
 		public bool HadCollision = false;
 
+		public bool Ghost = false;
 
 		/// <summary>
 		/// Bounciness of the body.
 		/// </summary>
 		public float Elasticity = 0f;
+
+		public Vector2 DirectionalElasticity = Vector2.Zero;
+
+
 		public CPosition PositionComponent;
 		
 		public CPhysics()

@@ -45,11 +45,7 @@ namespace PSH.Physics
 
 		private int _iterations;
 
-		private bool _flipflop = false;
-
 		
-		const int _threadCount = 4;
-
 		bool _useParallel = true;
 
 		public override void Create(Component component)
@@ -163,51 +159,63 @@ namespace PSH.Physics
 		}
 
 
-		static void GetCollisions(//object arg)
-		List<CachedCollision> collisions, QuadTree quad)
+		void GetCollisions(List<CachedCollision> collisions, QuadTree quad)
 		{
-			//var tuple = (Tuple<List<CachedCollision>, QuadTree>)arg;
-			//var collisions = tuple.Item1;
-			//var quad = tuple.Item2;
-
 			var leaves = quad.GetLeaves();
 			for (var leafId = 0; leafId < leaves.Count; leafId += 1)
 			{
 				var leaf = leaves[leafId];
-				for (var i = 0; i < leaf.Count - 1; i += 1)
+
+				for (var i = 0; i < leaf.ItemsCount; i += 1)
 				{
-					var physics = leaf[i];
+					var a = leaf.GetItem(i);
 
-					for (var k = i + 1; k < leaf.Count; k += 1)
+					for (var k = i + 1; k < leaf.ItemsCount; k += 1)
 					{
-						var otherPhysics = leaf[k];
-
-						if ((physics.InverseMass + otherPhysics.InverseMass) == 0) // TODO: Remove.
-							continue;
-
-						var intersection = CollisionSystem.CheckCollision(physics.Collider, otherPhysics.Collider);
-
-						if (intersection.Collided)
+						var b = leaf.GetItem(k);
+						if (a.Ghost && b.Ghost)
 						{
-							// Calculating some collision data right away, since it will be reused multiple times.
-							var manifold = intersection.GenerateManifold();
-							var collision = new CachedCollision
-							{
-								A = physics,
-								B = otherPhysics,
-								Intersection = intersection,
-								Manifold = manifold,
-								InvMassSum = physics.InverseMass + otherPhysics.InverseMass,
-								ElasticityDirection = (1 + (physics.Elasticity + otherPhysics.Elasticity) / 2f) * manifold.Direction,
-							};
-
-							physics.HadCollision = true;
-							otherPhysics.HadCollision = true;
-
-							collisions.Add(collision);
+							continue;
 						}
+
+						CacheCollision(collisions, a, b);
 					}
+
+					for (var k = 0; k < leaf.ImmovableItemsCount; k += 1)
+					{
+						CacheCollision(collisions, a, leaf.GetImmovableItem(k));
+					}
+
 				}
+			}
+		}
+
+		void CacheCollision(List<CachedCollision> collisions, CPhysics a, CPhysics b)
+		{
+			var intersection = CollisionSystem.CheckCollision(a.Collider, b.Collider);
+
+			if (intersection.Collided)
+			{
+				// Calculating some collision data right away, since it will be reused multiple times.
+				var manifold = intersection.GenerateManifold();
+				var collision = new CachedCollision
+				{
+					A = a,
+					B = b,
+					Intersection = intersection,
+					Manifold = manifold,
+					InvMassSum = a.InverseMass + b.InverseMass,
+					
+					ElasticityDirection = (1 + Math.Min(a.Elasticity, b.Elasticity)) * manifold.Direction 
+						// Secret sauce that makes platformer stacking work.
+						+ Vector2.Min(a.DirectionalElasticity, b.DirectionalElasticity) * manifold.Direction,
+				};
+
+
+				a.HadCollision = true;
+				b.HadCollision = true;
+
+				collisions.Add(collision);
 			}
 		}
 
@@ -286,9 +294,9 @@ namespace PSH.Physics
 			{
 				foreach (var leaf in quad.GetLeaves())
 				{
-					for (var i = 0; i < leaf.Count; i += 1)
+					for (var i = 0; i < leaf.ItemsCount; i += 1)
 					{
-						var physics = leaf[i];
+						var physics = leaf.GetItem(i);
 
 						if (physics != owner && CollisionSystem.CheckCollision(collider, physics.Collider).Collided)
 						{

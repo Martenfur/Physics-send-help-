@@ -1,9 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 
 namespace PSH.Physics.Collisions
 {
@@ -15,6 +11,7 @@ namespace PSH.Physics.Collisions
 		QuadTreeNode _root;
 		
 		public int Count {get; private set;}
+		
 
 		public QuadTree(Vector2 position, Vector2 size)
 		{
