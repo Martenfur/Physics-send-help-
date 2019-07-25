@@ -155,7 +155,7 @@ namespace PSH.Physics
 
 		void GetCollisions(List<CachedCollision> collisions, QuadTree quad)
 		{
-			var leaves = quad.GetLeaves();
+			var leaves = quad.Leaves;
 			for (var leafId = 0; leafId < leaves.Count; leafId += 1)
 			{
 				var leaf = leaves[leafId];

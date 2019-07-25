@@ -2,6 +2,10 @@
 
 namespace PSH.Physics.Collisions
 {
+	/// <summary>
+	/// Collision manifold. 
+	/// Contains data about collision direction and depth.
+	/// </summary>
 	public struct Manifold
 	{
 		public float Depth;

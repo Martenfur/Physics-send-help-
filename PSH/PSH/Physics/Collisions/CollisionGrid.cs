@@ -59,20 +59,7 @@ namespace PSH.Physics.Collisions
 			}
 			
 		}
-
-		public bool Remove(CPhysics physics)
-		{
-			var delta = physics.Collider.Position - Position;
-			var x = (int)(delta.X % CellSize);
-			var y = (int)(delta.Y % CellSize);
-
-			if (x >= 0 && y >= 0 && x < Width && y < Height)
-			{
-				return _cells[x, y].Remove(physics);
-			}
-			return false;
-		}
-
+		
 		public void Clear()
 		{
 			for(var y = 0; y < Height; y += 1)

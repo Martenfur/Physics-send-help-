@@ -9,7 +9,10 @@ namespace PSH.Physics.Collisions
 		public Vector2 Size;
 
 		QuadTreeNode _root;
-		
+
+		public List<QuadTreeNode> Leaves;
+
+
 		public int Count {get; private set;}
 		
 
@@ -17,7 +20,8 @@ namespace PSH.Physics.Collisions
 		{
 			Position = position;
 			Size = size;
-			_root = new QuadTreeNode(position, size, 0);
+			Leaves = new List<QuadTreeNode>();
+			_root = new QuadTreeNode(this, position, size, 0);
 		}
 
 		public void Add(CPhysics item)
@@ -25,9 +29,7 @@ namespace PSH.Physics.Collisions
 			_root.Add(item);
 			Count += 1;
 		}
-
-		public bool Remove(CPhysics item) =>
-			_root.Remove(item);
+		
 
 		public void Clear()
 		{
@@ -35,17 +37,16 @@ namespace PSH.Physics.Collisions
 			Count = 0;
 		}
 
+		/// <summary>
+		/// Draws a quadtree.
+		/// NOTE: This is a debug-only method.
+		/// </summary>
 		public void Draw() =>
 			_root.Draw();
 		
 
 
-		public List<QuadTreeNode> GetLeaves()
-		{
-			var leaves = new List<QuadTreeNode>();
-			_root.GetLeaves(leaves);
-			return leaves;
-		}
+		
 
 
 

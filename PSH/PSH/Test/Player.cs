@@ -26,7 +26,7 @@ namespace PSH.Test
 			{
 				collider = new RectangleCollider(
 					position, 
-					Vector2.One * 32
+					Vector2.One * 24
 					//new Vector2(_r.Next(32, 64), _r.Next(32, 64)) / 2f
 				);
 			}

@@ -61,12 +61,16 @@ namespace PSH.Physics.Collisions
 		public int ItemsCount => _items.Count;
 		public int ImmovableItemsCount => _immovableItems.Count;
 
+		QuadTree _owner;
 
-		public QuadTreeNode(Vector2 position, Vector2 size, int depth)
+		public QuadTreeNode(QuadTree owner, Vector2 position, Vector2 size, int depth)
 		{
 			Position = position;
 			Size = size;
 			_depth = depth;
+			_owner = owner;
+
+			_owner.Leaves.Add(this);
 		}
 
 		public void Add(CPhysics item)
@@ -93,28 +97,6 @@ namespace PSH.Physics.Collisions
 			}
 		}
 
-		public bool Remove(CPhysics item)
-		{
-			if (IsLeaf)
-			{
-				return _items.Remove(item);
-			}
-			else
-			{
-				var removed = false;
-				for (var i = 0; i < 4; i += 1)
-				{
-					if (_childNodes[i].Remove(item))
-					{
-						removed = true;
-					}
-				}
-				return removed;
-			}
-		}
-
-
-
 		public void Clear()
 		{
 			for(var i = 0; i < 4; i += 1)
@@ -124,6 +106,9 @@ namespace PSH.Physics.Collisions
 			_items.Clear();
 			_immovableItems.Clear();
 			IsLeaf = true;
+
+			_owner.Leaves.Clear();
+			_owner.Leaves.Add(this);
 		}
 
 
@@ -137,7 +122,7 @@ namespace PSH.Physics.Collisions
 			
 			for(var i = 0; i < 4; i += 1)
 			{
-				_childNodes[i] = new QuadTreeNode(Position + _rotation[i] * Size / 4f, Size / 2f, _depth + 1);
+				_childNodes[i] = new QuadTreeNode(_owner, Position + _rotation[i] * Size / 4f, Size / 2f, _depth + 1);
 			}
 
 			for(var i = 0; i < _items.Count; i += 1)
@@ -148,6 +133,8 @@ namespace PSH.Physics.Collisions
 			{
 				AddToChildren(_immovableItems[i]);
 			}
+
+			_owner.Leaves.Remove(this);
 		}
 
 		void AddToChildren(CPhysics item)
@@ -178,21 +165,10 @@ namespace PSH.Physics.Collisions
 			}
 		}
 
-		public void GetLeaves(List<QuadTreeNode> leaves)
-		{
-			if (IsLeaf)
-			{
-				leaves.Add(this);
-			}
-			else
-			{
-				for(var i = 0; i < 4; i += 1)
-				{
-					_childNodes[i].GetLeaves(leaves);
-				}
-			}
-		}
-
+		/// <summary>
+		/// Draws a quadtree's node.
+		/// NOTE: This is a debug-only method.
+		/// </summary>
 		public void Draw()
 		{
 			if (IsLeaf)

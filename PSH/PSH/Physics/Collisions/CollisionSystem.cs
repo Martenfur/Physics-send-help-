@@ -11,7 +11,7 @@ namespace PSH.Physics.Collisions
 	public static class CollisionSystem
 	{
 		/// <summary>
-		/// Matrix contains all allowed collider combinations.
+		/// Contains all allowed collider combinations.
 		/// </summary>
 		private static IntersectionDelegate[,] _intersectionMatrix;
 
@@ -20,11 +20,13 @@ namespace PSH.Physics.Collisions
 		public static void Init()
 		{
 			/*
-			 *   | r  | c 
-			 * ------------
-			 * r | rr | rc  
-			 * ------------
-			 * c | xx | cc  
+			 *   | r  | c  | p  |
+			 * ------------------
+			 * r | rr | rc | rp |
+			 * ------------------
+			 * c | xx | cc | cp |
+			 * ------------------
+			 * p | xx | xx | pp |
 			 */
 
 			_intersectionMatrix = new IntersectionDelegate[_intersectionMatrixSize, _intersectionMatrixSize];
