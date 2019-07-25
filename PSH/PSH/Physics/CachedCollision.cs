@@ -1,9 +1,12 @@
-﻿using PSH.Physics.Collisions;
+﻿using Microsoft.Xna.Framework;
+using PSH.Physics.Collisions;
 using PSH.Physics.Collisions.Intersections;
-using Microsoft.Xna.Framework;
 
 namespace PSH.Physics
 {
+	/// <summary>
+	/// Information about collision.
+	/// </summary>
 	struct CachedCollision
 	{
 		public CPhysics A;

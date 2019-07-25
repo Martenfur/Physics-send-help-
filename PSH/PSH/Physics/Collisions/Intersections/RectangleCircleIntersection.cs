@@ -48,8 +48,6 @@ namespace PSH.Physics.Collisions.Intersections
 			var manifold = new Manifold();
 			
 			var normalLength = 0f;
-
-			Console.WriteLine(_normal + " " + Collided);
 			
 			if (_normalLengthSquared == 0)
 			{

@@ -67,7 +67,7 @@ namespace PSH.Physics.Collisions
 				for(var x = 0; x < Width; x += 1)
 				{
 					_cells[x, y].Clear();
-				}	
+				}
 			}
 		}
 

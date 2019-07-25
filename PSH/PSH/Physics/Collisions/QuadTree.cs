@@ -5,6 +5,9 @@ namespace PSH.Physics.Collisions
 {
 	public class QuadTree
 	{
+		/// <summary>
+		/// Center of the quadtree.
+		/// </summary>
 		public Vector2 Position;
 		public Vector2 Size;
 

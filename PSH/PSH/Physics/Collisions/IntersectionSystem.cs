@@ -195,8 +195,7 @@ namespace PSH.Physics.Collisions
 				normal = -delta / delta.Length() * c.Radius / 2;
 				d = c.Radius * c.Radius;
 			}
-
-			Console.WriteLine(inside + "; " + closestCorner);
+			
 			if (d > c.Radius * c.Radius && !inside)
 			{
 				return new RectangleCircleIntersection(r, c, false, Vector2.Zero, Vector2.Zero, false, Vector2.Zero, 0);
