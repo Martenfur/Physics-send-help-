@@ -7,6 +7,7 @@ namespace PSH.Physics
 	public class CPhysics : Component
 	{
 		public Vector2 Speed;
+
 		public float Mass 
 		{
 			get
@@ -17,22 +18,12 @@ namespace PSH.Physics
 				}
 				return 1f / InverseMass;
 			}
-			set 
-			{
-				if (value == 0)
-				{
-					InverseMass = 0;
-				}
-				else
-				{
-					InverseMass = 1f / value;
-				}
-			}
 		}
-		public float InverseMass {get; private set;}
+		public readonly float InverseMass;
 
 		/// <summary>
 		/// Immovable bodies can't be influenced by other bodies.
+		/// 0 mass will make the body immovable.
 		/// </summary>
 		public bool Immovable => (InverseMass == 0);
 
@@ -52,13 +43,28 @@ namespace PSH.Physics
 		/// </summary>
 		public float Elasticity = 0f;
 
+		/// <summary>
+		/// Bounciness of the body that works in a single direction.
+		/// Good for platformers.
+		/// </summary>
 		public Vector2 DirectionalElasticity = Vector2.Zero;
-
 
 		public CPosition PositionComponent;
 		
-		public CPhysics()
+		/// <summary>
+		/// Mass can only be assigned at the start.
+		/// 0 mass will make the body immovable.
+		/// </summary>
+		public CPhysics(float mass)
 		{
+			if (mass == 0)
+			{
+				InverseMass = 0;
+			}
+			else
+			{
+				InverseMass = 1f / mass;
+			}
 			Visible = true;
 		}
 	}

@@ -39,7 +39,9 @@ namespace PSH.Test
 			}
 			
 			AddComponent(new CPosition(position));
-			AddComponent(new CPhysics{Collider = collider, Mass = 1});
+			var phy = new CPhysics(1);
+			phy.Collider = collider;
+			AddComponent(phy);
 		}
 
 		public override void FixedUpdate()

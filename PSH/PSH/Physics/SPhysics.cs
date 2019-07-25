@@ -186,7 +186,7 @@ namespace PSH.Physics
 
 		void CacheCollision(List<CachedCollision> collisions, CPhysics a, CPhysics b)
 		{
-			var intersection = CollisionSystem.CheckIntersection(a.Collider, b.Collider);
+			var intersection = IntersectionSystem.CheckIntersection(a.Collider, b.Collider);
 
 			if (intersection.Collided)
 			{

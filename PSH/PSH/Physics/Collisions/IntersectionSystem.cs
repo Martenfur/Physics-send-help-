@@ -8,7 +8,10 @@ namespace PSH.Physics.Collisions
 {
 	public delegate IIntersection IntersectionDelegate(ICollider a, ICollider b, bool flipNormal);
 
-	public static class CollisionSystem
+	/// <summary>
+	/// Contains methods for checking if various colliders intersect.
+	/// </summary>
+	public static class IntersectionSystem
 	{
 		/// <summary>
 		/// Contains all allowed collider combinations.
@@ -71,6 +74,8 @@ namespace PSH.Physics.Collisions
 
 			if (id2 < id1) // Only upper half of matrix is being used.
 			{
+				// Colliders of two different types need their normal to be flipped for 
+				// collision resolving to work correctly.
 				return _intersectionMatrix[id2, id1](collider2, collider1, true);
 			}
 			return _intersectionMatrix[id1, id2](collider1, collider2, false);

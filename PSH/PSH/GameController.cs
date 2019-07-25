@@ -33,7 +33,7 @@ namespace PSH
 			
 			GraphicsMgr.Sampler = SamplerState.PointClamp;
 			
-			CollisionSystem.Init();
+			IntersectionSystem.Init();
 
 			CircleShape.CircleVerticesCount = 16;
 			
@@ -91,7 +91,9 @@ namespace PSH
 				var collider = new RectangleCollider(cam.GetRelativeMousePosition(), size);
 
 				e.AddComponent(new CPosition(collider.Position));
-				e.AddComponent(new CPhysics { Collider = collider, Mass = 0});
+				var phy = new CPhysics(0);
+				phy.Collider = collider;
+				e.AddComponent(phy);
 			}
 
 		}
@@ -103,7 +105,7 @@ namespace PSH
 			
 			var c = new CircleCollider(Input.MousePosition, 100);
 
-			var collision = CollisionSystem.CheckIntersection(r, c);//.RectangleCircle(r, c);
+			var collision = IntersectionSystem.CheckIntersection(r, c);//.RectangleCircle(r, c);
 			var manifold = collision.GenerateManifold();
 			
 			GraphicsMgr.CurrentColor = Color.Orange;
