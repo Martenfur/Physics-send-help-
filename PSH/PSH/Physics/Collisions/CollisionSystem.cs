@@ -126,21 +126,31 @@ namespace PSH.Physics.Collisions
 			return new CircleCircleIntersection(c1, c2, true,	delta, lengthSqr, rSumSqr);
 		}
 		
-		 
+		
+		static float Clamp(float val, float min, float max)
+		{
+			if (val <= min)
+			{
+				return min;
+			}
+			if (val >= max)
+			{
+				return max;
+			}
+			return val;
+		}
+
 		public static IIntersection RectangleCircle(ICollider a, ICollider b, bool flipNormal)
 		{
 			var r = (RectangleCollider)a;
 			var c = (CircleCollider)b;
-
-			var collision = new Manifold();
-
-
+			
 			var delta = c.Position - r.Position;
 
 
 			var closestCorner = new Vector2(
-				MathHelper.Clamp(delta.X, -r.HalfSize.X, r.HalfSize.X),
-				MathHelper.Clamp(delta.Y, -r.HalfSize.Y, r.HalfSize.Y)
+				Clamp(delta.X, -r.HalfSize.X, r.HalfSize.X),
+				Clamp(delta.Y, -r.HalfSize.Y, r.HalfSize.Y)
 			);
 
 			var inside = false;
@@ -173,20 +183,29 @@ namespace PSH.Physics.Collisions
 				}
 
 			}
-
 			var normal = delta - closestCorner;
 			var d = normal.LengthSquared();
-			//
+
+			// An extreme corner case which most likely will never happen.
+			// When d = 0, the circle's center point is right on the rectangle's outline.
+			if (d == 0)
+			{
+				normal = -delta / delta.Length() * c.Radius / 2;
+				d = c.Radius * c.Radius;
+			}
+
+			Console.WriteLine(inside + "; " + closestCorner);
 			if (d > c.Radius * c.Radius && !inside)
 			{
 				return new RectangleCircleIntersection(r, c, false, Vector2.Zero, Vector2.Zero, false, Vector2.Zero, 0);
 			}
 
+			
 			if (flipNormal)
 			{
 				normal *= -1;
 			}
-			return new RectangleCircleIntersection(r, c, true, delta, closestCorner, inside,	normal,	d);
+			return new RectangleCircleIntersection(r, c, true, delta, closestCorner, inside, normal, d);
 		}
 		
 

@@ -36,24 +36,31 @@ namespace PSH
 			CollisionSystem.Init();
 
 			CircleShape.CircleVerticesCount = 16;
-
-
-			var s1 = 8f;
-			var s2 = 10f;
-			var l = 3f;
-			var ma = 20f;
-			var mb = 15f;
-			var dt = 0.2f;
-
-			var ss1 = s1 - l * ma;
-			var ss2 = s2 + l * mb;
-
-			var ds1 = dt * (ss1 - ss2);
-			var dsp = dt * (s1 - s2);
-			var ds2 = dsp - dt * l * (ma + mb);
-
-			System.Console.WriteLine("d1: " + ds1 + " d2: " + ds2);
 			
+
+			var v1 = new Vector2(200, 300);
+			var v2 = new Vector2(450, -456);
+
+
+			var sw = new System.Diagnostics.Stopwatch();
+			sw.Start();
+			for(var i = 0; i < 1000000; i += 1)
+			{
+				var v = v1 - v2;
+			}
+			sw.Stop();
+
+
+
+			var sw1 = new System.Diagnostics.Stopwatch();
+			sw1.Start();
+			for (var i = 0; i < 1000000; i += 1)
+			{
+				var v = new Vector2(v1.X - v2.X, v1.Y - v2.Y);
+			}
+			sw1.Stop();
+
+			System.Console.WriteLine(sw.ElapsedTicks + " : " + sw1.ElapsedTicks);
 		}
 
 		public override void Update()
@@ -72,11 +79,11 @@ namespace PSH
 			{
 				var e = new Entity(Layer, "wall");
 
-				var size = new Vector2(32, 500);
+				var size = new Vector2(100, 500);
 
 				if (Input.CheckButton(Buttons.LeftShift))
 				{
-					size = new Vector2(500, 32);
+					size = new Vector2(500, 100);
 				}
 
 				var collider = new RectangleCollider(cam.GetRelativeMousePosition(), size);
@@ -89,29 +96,27 @@ namespace PSH
 
 		public override void Draw()
 		{
-			//Default.Monofoxe.Draw(new Vector2(400, 300), Default.Monofoxe.Origin);
-
-			var r = new RectangleCollider(new Vector2(300, 300), new Vector2(100, 100));
+			
+			var r = new RectangleCollider(new Vector2(300, 300), new Vector2(220, 220));
 			
 			var c = new CircleCollider(Input.MousePosition, 100);
 
-			//var collision = CollisionSystem.RectangleCircle(r, c);
-
-			/*
+			var collision = CollisionSystem.CheckCollision(r, c);//.RectangleCircle(r, c);
+			var manifold = collision.GenerateManifold();
+			
 			GraphicsMgr.CurrentColor = Color.Orange;
 
-			RectangleShape.DrawBySize(r.Position, r.Size, true);
+			RectangleShape.DrawBySize(r.Position, r.HalfSize * 2, true);
 			CircleShape.Draw(c.Position, c.Radius, true);
 
 			if (collision.Collided)
 			{
 				GraphicsMgr.CurrentColor = Color.Red;
 
-				LineShape.Draw(c.Position, c.Position + collision.Direction * collision.Depth);
-
+				LineShape.Draw(c.Position, c.Position + manifold.Direction * manifold.Depth);
 			}
-			*/
-			GraphicsMgr.CurrentColor = Color.Beige * 0.7f;
+			
+			GraphicsMgr.CurrentColor = Color.Beige * 0.3f;
 			//SPhysics.Grid.Draw();
 
 		}

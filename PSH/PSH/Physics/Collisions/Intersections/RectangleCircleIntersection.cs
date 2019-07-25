@@ -49,6 +49,8 @@ namespace PSH.Physics.Collisions.Intersections
 			
 			var normalLength = 0f;
 
+			Console.WriteLine(_normal + " " + Collided);
+			
 			if (_normalLengthSquared == 0)
 			{
 				_normal = Vector2.UnitX;
@@ -69,7 +71,6 @@ namespace PSH.Physics.Collisions.Intersections
 				manifold.Direction = _normal;
 				manifold.Depth = ((CircleCollider)B).Radius - normalLength;
 			}
-			
 			return manifold;
 		}
 

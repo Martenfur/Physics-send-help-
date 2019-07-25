@@ -48,6 +48,9 @@ namespace PSH.Physics
 		
 		bool _useParallel = true;
 
+		Stopwatch _stopwatch = new Stopwatch();
+
+
 		public override void Create(Component component)
 		{
 			// Caching the position to reduce GetComponent calls.
@@ -58,10 +61,8 @@ namespace PSH.Physics
 
 		public override void FixedUpdate(List<Component> components)
 		{
-			var sw = new Stopwatch();
 			_iterations = 0;
-
-			sw.Start();
+			_stopwatch.Start();
 
 			// Updating the grid.
 			Grid.Clear();
@@ -75,19 +76,12 @@ namespace PSH.Physics
 			// Updating the grid.
 
 			// Getting all intersections and manifolds.
-			var quads = new List<QuadTree>();
-			foreach (var quad in Grid.Cells) // TODO: Replace.
-			{
-				if (quad.Count > 0)
-				{
-					quads.Add(quad);
-				}
-			}
+			
 
 			
 			var cachedCollisions = new List<List<CachedCollision>>();
 
-			for(var i = 0; i < quads.Count; i += 1)
+			for(var i = 0; i < Grid.FilledCells.Count; i += 1)
 			{
 				cachedCollisions.Add(new List<CachedCollision>());
 			}
@@ -95,7 +89,7 @@ namespace PSH.Physics
 			if (_useParallel)
 			{
 				Parallel.ForEach(
-					quads,
+					Grid.FilledCells,
 					(quad, state, index) => {
 						GetCollisions(cachedCollisions[(int)index], quad);
 					}
@@ -103,9 +97,9 @@ namespace PSH.Physics
 			}
 			else
 			{
-				for(var i = 0; i < quads.Count; i += 1)
+				for(var i = 0; i < Grid.FilledCells.Count; i += 1)
 				{
-					GetCollisions(cachedCollisions[i], quads[i]);
+					GetCollisions(cachedCollisions[i], Grid.FilledCells[i]);
 				}
 			}
 			
@@ -148,11 +142,11 @@ namespace PSH.Physics
 			}
 			// Updating positions.
 
-			sw.Stop();
+			_stopwatch.Stop();
 
 			GameMgr.WindowManager.WindowTitle = "fps: " + GameMgr.Fps
 				+ ", iterations: " + _iterations
-				+ ", time: " + sw.ElapsedTicks
+				+ ", time: " + _stopwatch.ElapsedTicks
 				+ ", bodies: " + components.Count
 				+ ", parallel: " + _useParallel;
 
@@ -227,9 +221,9 @@ namespace PSH.Physics
 			var a = collision.A;
 			var b = collision.B;
 			
-			var speedDelta = a.Speed - b.Speed;
-
-			var dotProduct = Vector2.Dot(speedDelta, collision.Manifold.Direction);
+			var dotProduct = (a.Speed.X - b.Speed.X) * collision.Manifold.Direction.X 
+				+ (a.Speed.Y - b.Speed.Y) * collision.Manifold.Direction.Y;
+			
 
 			// Do not push, if shapes are separating.
 			if (dotProduct < 0)
@@ -237,10 +231,13 @@ namespace PSH.Physics
 				return;
 			}
 			
-			var l = (collision.ElasticityDirection * dotProduct) / collision.InvMassSum;
+			var dot = dotProduct / collision.InvMassSum;
 
-			a.Speed -= l * a.InverseMass;
-			b.Speed += l * b.InverseMass;
+			var lx = collision.ElasticityDirection.X * dot;
+			var ly = collision.ElasticityDirection.Y * dot;
+			
+			a.Speed = new Vector2(a.Speed.X - lx * a.InverseMass, a.Speed.Y - ly * a.InverseMass);
+			b.Speed = new Vector2(b.Speed.X + lx * b.InverseMass, b.Speed.Y + ly * b.InverseMass);
 		}
 
 		/// <summary>
@@ -289,6 +286,8 @@ namespace PSH.Physics
 
 		public static bool GetCollision(CPhysics owner, ICollider collider)
 		{
+			return false;
+		/*
 			// TODO: Replace this with something decent.
 			foreach (var quad in Grid.Cells)
 			{
@@ -306,7 +305,7 @@ namespace PSH.Physics
 					}
 				}
 			}
-			return false;
+			return false;*/
 		}
 
 

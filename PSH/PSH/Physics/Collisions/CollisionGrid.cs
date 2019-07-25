@@ -6,7 +6,11 @@ namespace PSH.Physics.Collisions
 {
 	public class CollisionGrid
 	{
-		public QuadTree[,] Cells;
+		public QuadTree[,] _cells;
+
+		/// <summary>
+		/// Contains all the cells which have something in them.
+		/// </summary>
 		public List<QuadTree> FilledCells;
 
 		public readonly int Width = 10;
@@ -14,16 +18,19 @@ namespace PSH.Physics.Collisions
 		
 		public readonly int CellSize = 512;
 
-		Vector2 Position;
+		/// <summary>
+		/// Top-left corner of the grid.
+		/// </summary>
+		public Vector2 Position;
 		
 		public CollisionGrid()
 		{
-			Cells = new QuadTree[Width, Height];
+			_cells = new QuadTree[Width, Height];
 			for(var y = 0; y < Height; y += 1)
 			{
 				for(var x = 0; x < Width; x += 1)
 				{
-					Cells[x, y] = new QuadTree(Position + new Vector2(x, y) * CellSize + Vector2.One * CellSize / 2, Vector2.One * CellSize);
+					_cells[x, y] = new QuadTree(Position + new Vector2(x, y) * CellSize + Vector2.One * CellSize / 2, Vector2.One * CellSize);
 				}
 			}
 
@@ -42,26 +49,16 @@ namespace PSH.Physics.Collisions
 				{
 					if (InBounds(new Point(x, y)))
 					{
-						Cells[x, y].Add(physics);
-						if (!FilledCells.Contains(Cells[x, y]))
+						_cells[x, y].Add(physics);
+						if (!FilledCells.Contains(_cells[x, y]))
 						{
-							FilledCells.Add(Cells[x, y]);
+							FilledCells.Add(_cells[x, y]);
 						}
 					}
 				}
 			}
 			
 		}
-
-		Point ToCellCoordinates(Vector2 position) =>
-			((position - Position) / CellSize).ToPoint();
-			
-		bool InBounds(Point point) =>
-			(point.X >= 0 && point.Y >= 0 && point.X < Width && point.Y < Height);
-
-		bool InBounds(Point minPoint, Point maxPoint) =>
-			(minPoint.X >= 0 && minPoint.Y >= 0 && maxPoint.X < Width && maxPoint.Y < Height);
-
 
 		public bool Remove(CPhysics physics)
 		{
@@ -71,7 +68,7 @@ namespace PSH.Physics.Collisions
 
 			if (x >= 0 && y >= 0 && x < Width && y < Height)
 			{
-				//return Cells[x, y].Remove(physics);
+				return _cells[x, y].Remove(physics);
 			}
 			return false;
 		}
@@ -82,12 +79,34 @@ namespace PSH.Physics.Collisions
 			{
 				for(var x = 0; x < Width; x += 1)
 				{
-					Cells[x, y].Clear();
+					_cells[x, y].Clear();
 				}	
 			}
 		}
 
+		/// <summary>
+		/// Converts regular position to the grid cell coordinates.
+		/// </summary>
+		Point ToCellCoordinates(Vector2 position) =>
+			((position - Position) / CellSize).ToPoint();
 
+		/// <summary>
+		/// Checks if given cell coordinates are in bounds.
+		/// </summary>
+		bool InBounds(Point point) =>
+			(point.X >= 0 && point.Y >= 0 && point.X < Width && point.Y < Height);
+
+		/// <summary>
+		/// Checks if given range cell coordinates are in bounds.
+		/// </summary>
+		bool InBounds(Point minPoint, Point maxPoint) =>
+			(minPoint.X >= 0 && minPoint.Y >= 0 && maxPoint.X < Width && maxPoint.Y < Height);
+
+
+		/// <summary>
+		/// Renders the grid and its cells.
+		/// NOTE: This method should be used only for debug purposes.
+		/// </summary>
 		public void Draw()
 		{
 			var size = new Vector2(Width, Height) * CellSize;
@@ -98,8 +117,7 @@ namespace PSH.Physics.Collisions
 				for(var x = 0; x < Width; x += 1)
 				{
 					var center = Position + Vector2.One * CellSize / 2 + CellSize * new Vector2(x, y);
-					//RectangleShape.DrawBySize(center, Vector2.One * CellSize, true);
-					Cells[x, y].Draw();
+					_cells[x, y].Draw();
 				}
 			}
 		}

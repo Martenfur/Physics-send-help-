@@ -6,13 +6,26 @@ namespace PSH.Physics.Collisions
 {
 	public class QuadTreeNode
 	{
+		/// <summary>
+		/// If the node is a leaf, contains more items 
+		/// and limit allows and hasn't reached deoth limit, it will split.
+		/// </summary>
 		const int _itemLimit = 5;
+		/// <summary>
+		/// Leaves deeper than the limit cannot split anymore.
+		/// </summary>
 		const int _depthLimit = 3;
 
+		/// <summary>
+		/// Depth of the node.
+		/// </summary>
 		readonly int _depth;
 
-		QuadTreeNode[] _childNodes;
+		readonly QuadTreeNode[] _childNodes = new QuadTreeNode[4];
 
+		/// <summary>
+		/// Tells if the node is a leaf. Only leaves can contain items.
+		/// </summary>
 		public bool IsLeaf {get; private set;} = true; 
 
 		/// <summary>
@@ -26,8 +39,15 @@ namespace PSH.Physics.Collisions
 		List<CPhysics> _immovableItems = new List<CPhysics>();
 
 
-		public Vector2 Position;
-		public Vector2 Size;
+		/// <summary>
+		/// Center position of the node.
+		/// </summary>
+		public Vector2 Position {get; private set;}
+
+		/// <summary>
+		/// Size of the node.
+		/// </summary>
+		public Vector2 Size {get; private set;}
 
 
 		Vector2[] _rotation = new Vector2[]
@@ -72,10 +92,35 @@ namespace PSH.Physics.Collisions
 				AddToChildren(item);
 			}
 		}
-		
+
+		public bool Remove(CPhysics item)
+		{
+			if (IsLeaf)
+			{
+				return _items.Remove(item);
+			}
+			else
+			{
+				var removed = false;
+				for (var i = 0; i < 4; i += 1)
+				{
+					if (_childNodes[i].Remove(item))
+					{
+						removed = true;
+					}
+				}
+				return removed;
+			}
+		}
+
+
+
 		public void Clear()
 		{
-			_childNodes = null;
+			for(var i = 0; i < 4; i += 1)
+			{
+				_childNodes[i] = null;
+			}
 			_items.Clear();
 			_immovableItems.Clear();
 			IsLeaf = true;
@@ -86,30 +131,10 @@ namespace PSH.Physics.Collisions
 
 		public CPhysics GetImmovableItem(int i) => _immovableItems[i];
 
-
-
-		public void Draw()
-		{
-			RectangleShape.DrawBySize(Position, Size, true);
-			if (IsLeaf)
-			{
-				Text.Draw((_items.Count + _immovableItems.Count) + "", Position);
-			}
-			else
-			{
-				for(var i = 0; i < 4; i += 1)
-				{
-					_childNodes[i].Draw();
-				}
-			}
-		}
-
 		void Split()
 		{
 			IsLeaf = false;
-
-			_childNodes = new QuadTreeNode[4];
-
+			
 			for(var i = 0; i < 4; i += 1)
 			{
 				_childNodes[i] = new QuadTreeNode(Position + _rotation[i] * Size / 4f, Size / 2f, _depth + 1);
@@ -123,8 +148,6 @@ namespace PSH.Physics.Collisions
 			{
 				AddToChildren(_immovableItems[i]);
 			}
-
-
 		}
 
 		void AddToChildren(CPhysics item)
@@ -169,6 +192,22 @@ namespace PSH.Physics.Collisions
 				}
 			}
 		}
-		
+
+		public void Draw()
+		{
+			if (IsLeaf)
+			{
+				RectangleShape.DrawBySize(Position, Size, true);
+				Text.Draw((_items.Count + _immovableItems.Count) + "", Position);
+			}
+			else
+			{
+				for (var i = 0; i < 4; i += 1)
+				{
+					_childNodes[i].Draw();
+				}
+			}
+		}
+
 	}
 }

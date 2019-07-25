@@ -26,16 +26,18 @@ namespace PSH.Physics.Collisions
 			Count += 1;
 		}
 
+		public bool Remove(CPhysics item) =>
+			_root.Remove(item);
+
 		public void Clear()
 		{
 			_root.Clear();
 			Count = 0;
 		}
 
-		public void Draw()
-		{
+		public void Draw() =>
 			_root.Draw();
-		}
+		
 
 
 		public List<QuadTreeNode> GetLeaves()
