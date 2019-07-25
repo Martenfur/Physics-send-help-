@@ -2,6 +2,10 @@
 
 namespace PSH.Physics.Collisions.Colliders
 {
+	/// <summary>
+	/// Colliders describe some shape or a structure which 
+	/// can be tested against other colliders for intersection.
+	/// </summary>
 	public interface ICollider
 	{
 		ColliderType ColliderType { get; }
@@ -18,16 +22,22 @@ namespace PSH.Physics.Collisions.Colliders
 		/// </summary>
 		Vector2 HalfSize { get; set; }
 		
-		// TODO: Add offsets.
-
 		/// <summary>
-		/// TODO: Implement.
+		/// DIsabled collider will not detect collisions.
 		/// </summary>
 		bool Enabled { get; set; }
 
+		/// <summary>
+		/// Renders the collider.
+		/// NOTE: This is a debug-only method!
+		/// </summary>
 		void Draw(bool isOutline);
 	}
 
+	/// <summary>
+	/// Type of the collider.
+	/// Used for collision matrix.
+	/// </summary>
 	public enum ColliderType : int
 	{
 		Rectangle = 0,

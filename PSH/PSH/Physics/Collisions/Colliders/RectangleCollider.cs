@@ -18,6 +18,7 @@ namespace PSH.Physics.Collisions.Colliders
 			HalfSize = size / 2;
 			Enabled = true;
 		}
+		
 
 		public void Draw(bool isOutline) =>
 			RectangleShape.DrawBySize(Position, HalfSize * 2, isOutline);

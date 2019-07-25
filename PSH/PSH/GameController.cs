@@ -9,7 +9,7 @@ using PSH.Physics;
 using PSH.Physics.Collisions;
 using PSH.Physics.Collisions.Colliders;
 using PSH.Test;
-
+using Monofoxe.Engine.Utils;
 
 namespace PSH
 {
@@ -61,6 +61,8 @@ namespace PSH
 			sw1.Stop();
 
 			System.Console.WriteLine(sw.ElapsedTicks + " : " + sw1.ElapsedTicks);
+
+			TimeKeeper.GlobalTimeMultiplier = 0.5f;
 		}
 
 		public override void Update()
@@ -101,7 +103,7 @@ namespace PSH
 			
 			var c = new CircleCollider(Input.MousePosition, 100);
 
-			var collision = CollisionSystem.CheckCollision(r, c);//.RectangleCircle(r, c);
+			var collision = CollisionSystem.CheckIntersection(r, c);//.RectangleCircle(r, c);
 			var manifold = collision.GenerateManifold();
 			
 			GraphicsMgr.CurrentColor = Color.Orange;

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine.ECS;
 using PSH.Physics.Collisions.Colliders;
-using PSH.Physics.Collisions.Intersections;
 
 namespace PSH.Physics
 {
@@ -32,12 +31,20 @@ namespace PSH.Physics
 		}
 		public float InverseMass {get; private set;}
 
+		/// <summary>
+		/// Immovable bodies can't be influenced by other bodies.
+		/// </summary>
 		public bool Immovable => (InverseMass == 0);
+
 
 		public ICollider Collider;
 
+
 		public bool HadCollision = false;
 
+		/// <summary>
+		/// Ghost bodies don't collide with other ghost bodies.
+		/// </summary>
 		public bool Ghost = false;
 
 		/// <summary>

@@ -47,7 +47,7 @@ namespace PSH.Test
 			
 			var physics = GetComponent<CPhysics>();
 
-			if (Input.CheckButton(Buttons.MouseLeft))// && physics.Elasticity > 0)
+			if (Input.CheckButtonPress(Buttons.MouseLeft))// && physics.Elasticity > 0)
 			{
 				var position = GetComponent<CPosition>();
 

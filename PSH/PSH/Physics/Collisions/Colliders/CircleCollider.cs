@@ -9,7 +9,6 @@ namespace PSH.Physics.Collisions.Colliders
 		public ColliderType ColliderType => ColliderType.Circle;
 		public Vector2 Position { get; set; }
 		
-
 		public Vector2 HalfSize 
 		{ 
 			get => Vector2.One * Radius; 
@@ -17,7 +16,7 @@ namespace PSH.Physics.Collisions.Colliders
 		}
 
 		public float Radius;
-
+		
 		public bool Enabled { get; set; }
 
 		public CircleCollider(Vector2 position, float radius)
@@ -26,7 +25,7 @@ namespace PSH.Physics.Collisions.Colliders
 			Radius = radius;
 			Enabled = true;
 		}
-
+		
 		public void Draw(bool isOutline) =>
 			CircleShape.Draw(Position, Radius, isOutline);
 	}

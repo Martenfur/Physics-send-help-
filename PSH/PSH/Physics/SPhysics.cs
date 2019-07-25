@@ -186,7 +186,7 @@ namespace PSH.Physics
 
 		void CacheCollision(List<CachedCollision> collisions, CPhysics a, CPhysics b)
 		{
-			var intersection = CollisionSystem.CheckCollision(a.Collider, b.Collider);
+			var intersection = CollisionSystem.CheckIntersection(a.Collider, b.Collider);
 
 			if (intersection.Collided)
 			{
@@ -260,7 +260,7 @@ namespace PSH.Physics
 			var physics = (CPhysics)component;
 			var position = physics.Owner.GetComponent<CPosition>();
 
-			if (false)//physics.HadCollision)
+			if (physics.HadCollision)
 			{
 				GraphicsMgr.CurrentColor = Color.Red * 0.5f;
 			}
@@ -268,7 +268,7 @@ namespace PSH.Physics
 			{
 				GraphicsMgr.CurrentColor = Color.White * 0.5f;
 			}
-
+			
 			physics.Collider.Draw(false);
 
 			if (physics.HadCollision)
@@ -280,7 +280,7 @@ namespace PSH.Physics
 				GraphicsMgr.CurrentColor = Color.White;
 			}
 
-			//physics.Collider.Draw(true);
+			physics.Collider.Draw(true);
 
 		}
 

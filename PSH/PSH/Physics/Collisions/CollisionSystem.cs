@@ -48,8 +48,16 @@ namespace PSH.Physics.Collisions
 			
 		}
 
-		public static IIntersection CheckCollision(ICollider collider1, ICollider collider2)
+		/// <summary>
+		/// Checks if two colliders intersect.
+		/// </summary>
+		public static IIntersection CheckIntersection(ICollider collider1, ICollider collider2)
 		{
+			if (!collider1.Enabled || !collider2.Enabled)
+			{
+				return new NoIntersection();
+			}
+
 			/*
 			 * Each collider type has its own unique index.
 			 * We are taking them and retrieving appropriate
@@ -70,7 +78,7 @@ namespace PSH.Physics.Collisions
 
 		
 
-		public static IIntersection RectangleRectangle(ICollider a, ICollider b, bool flipNormal)
+		static IIntersection RectangleRectangle(ICollider a, ICollider b, bool flipNormal)
 		{
 			var r1 = (RectangleCollider)a;
 			var r2 = (RectangleCollider)b;
@@ -108,7 +116,7 @@ namespace PSH.Physics.Collisions
 		}
 
 		
-		public static IIntersection CircleCircle(ICollider a, ICollider b, bool flipNormal)
+		static IIntersection CircleCircle(ICollider a, ICollider b, bool flipNormal)
 		{
 			var c1 = (CircleCollider)a;
 			var c2 = (CircleCollider)b;
@@ -128,21 +136,8 @@ namespace PSH.Physics.Collisions
 			return new CircleCircleIntersection(c1, c2, true,	delta, lengthSqr, rSumSqr);
 		}
 		
-		
-		static float Clamp(float val, float min, float max)
-		{
-			if (val <= min)
-			{
-				return min;
-			}
-			if (val >= max)
-			{
-				return max;
-			}
-			return val;
-		}
 
-		public static IIntersection RectangleCircle(ICollider a, ICollider b, bool flipNormal)
+		static IIntersection RectangleCircle(ICollider a, ICollider b, bool flipNormal)
 		{
 			var r = (RectangleCollider)a;
 			var c = (CircleCollider)b;
@@ -151,8 +146,8 @@ namespace PSH.Physics.Collisions
 
 
 			var closestCorner = new Vector2(
-				Clamp(delta.X, -r.HalfSize.X, r.HalfSize.X),
-				Clamp(delta.Y, -r.HalfSize.Y, r.HalfSize.Y)
+				MathHelper.Clamp(delta.X, -r.HalfSize.X, r.HalfSize.X),
+				MathHelper.Clamp(delta.Y, -r.HalfSize.Y, r.HalfSize.Y)
 			);
 
 			var inside = false;
