@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine.Drawing;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 namespace PSH.Physics.Collisions
 {
@@ -88,6 +89,31 @@ namespace PSH.Physics.Collisions
 		/// </summary>
 		bool InBounds(Point minPoint, Point maxPoint) =>
 			(minPoint.X >= 0 && minPoint.Y >= 0 && maxPoint.X < Width && maxPoint.Y < Height);
+
+
+		/// <summary>
+		/// Returns a list of non-empty cells in given range or regular coordinates. 
+		/// </summary>
+		public List<QuadTree> GetFilledCellsInRange(Vector2 topLeft, Vector2 bottomRight)
+		{
+			var minPoint = ToCellCoordinates(topLeft);
+			var maxPoint = ToCellCoordinates(bottomRight);
+			
+			var cells = new List<QuadTree>();
+
+			for (var y = minPoint.Y; y <= maxPoint.Y; y += 1)
+			{
+				for (var x = minPoint.X; x <= maxPoint.X; x += 1)
+				{
+					if (InBounds(new Point(x, y)) && _cells[x, y].Count > 0)
+					{
+						cells.Add(_cells[x, y]);
+					}
+				}
+			}
+
+			return cells;
+		}
 
 
 		/// <summary>

@@ -48,7 +48,10 @@ namespace PSH.Physics.Collisions
 			_root.Draw();
 		
 
-
+		public void GetLeavesInRange(List<QuadTreeNode> list, Vector2 topLeft, Vector2 bottomRight) =>
+			_root.GetLeavesInRange(list, topLeft, bottomRight);
+		
+		
 		
 
 

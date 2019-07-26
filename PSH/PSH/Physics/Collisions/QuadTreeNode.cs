@@ -165,6 +165,38 @@ namespace PSH.Physics.Collisions
 			}
 		}
 
+		public void GetLeavesInRange(List<QuadTreeNode> list, Vector2 topLeft, Vector2 bottomRight)
+		{
+			if (IsLeaf)
+			{
+				list.Add(this);
+			}
+			else
+			{
+				var top = (topLeft.Y < Position.Y);
+				var bottom = (bottomRight.Y >= Position.Y);
+				var left = (topLeft.X < Position.X);
+				var right = (bottomRight.X >= Position.X);
+
+				if (top && right)
+				{
+					_childNodes[0].GetLeavesInRange(list, topLeft, bottomRight);
+				}
+				if (bottom && right)
+				{
+					_childNodes[1].GetLeavesInRange(list, topLeft, bottomRight);
+				}
+				if (bottom && left)
+				{
+					_childNodes[2].GetLeavesInRange(list, topLeft, bottomRight);
+				}
+				if (top && left)
+				{
+					_childNodes[3].GetLeavesInRange(list, topLeft, bottomRight);
+				}
+			}
+		}
+
 		/// <summary>
 		/// Draws a quadtree's node.
 		/// NOTE: This is a debug-only method.

@@ -23,7 +23,7 @@ namespace PSH
 			GameMgr.MinGameSpeed = 60; // Fixing framerate on 60.
 			GameMgr.FixedUpdateRate = 1.0 / 60.0;
 
-			cam.BackgroundColor = new Color(38, 38, 38);
+			cam.BackgroundColor = new Color(212, 188, 229);
 			cam.Zoom = 1;//0.5f;
 			GameMgr.WindowManager.CanvasSize = new Vector2(1200, 800);
 			GameMgr.WindowManager.Window.AllowUserResizing = false;
@@ -37,45 +37,15 @@ namespace PSH
 
 			CircleShape.CircleVerticesCount = 16;
 			
-
-			var v1 = new Vector2(200, 300);
-			var v2 = new Vector2(450, -456);
-
-
-			var sw = new System.Diagnostics.Stopwatch();
-			sw.Start();
-			for(var i = 0; i < 1000000; i += 1)
-			{
-				var v = v1 - v2;
-			}
-			sw.Stop();
-
-
-
-			var sw1 = new System.Diagnostics.Stopwatch();
-			sw1.Start();
-			for (var i = 0; i < 1000000; i += 1)
-			{
-				var v = new Vector2(v1.X - v2.X, v1.Y - v2.Y);
-			}
-			sw1.Stop();
-
-			System.Console.WriteLine(sw.ElapsedTicks + " : " + sw1.ElapsedTicks);
-
-			TimeKeeper.GlobalTimeMultiplier = 0.5f;
 		}
 
 		public override void Update()
 		{
 			if (Input.CheckButtonPress(Buttons.B) || Input.CheckButton(Buttons.M))
 			{
-				var p = new Player(Layer, cam.GetRelativeMousePosition());
+				var p = new Body(Layer, cam.GetRelativeMousePosition());
 				var phy = p.GetComponent<CPhysics>();
 				phy.DirectionalElasticity = Vector2.UnitY;
-				if (Input.CheckButtonPress(Buttons.B))
-				{
-					//phy.Ghost = true;
-				}
 			}
 			if (Input.CheckButtonPress(Buttons.N))
 			{
@@ -96,28 +66,28 @@ namespace PSH
 				e.AddComponent(phy);
 			}
 
+
+			GameMgr.WindowManager.WindowTitle = "fps: " + GameMgr.Fps
+				+ ", iterations: " + SPhysics._iterations
+				+ ", time: " + SPhysics._stopwatch.ElapsedTicks
+				+ ", bodies: " + Scene.GetEntityListByComponent<CPhysics>().Count;
 		}
 
 		public override void Draw()
 		{
-			
-			var r = new RectangleCollider(new Vector2(300, 300), new Vector2(220, 220));
-			
-			var c = new CircleCollider(Input.MousePosition, 100);
+			var c = new CircleCollider(Input.MousePosition, 50);
 
-			var collision = IntersectionSystem.CheckIntersection(r, c);//.RectangleCircle(r, c);
-			var manifold = collision.GenerateManifold();
-			
 			GraphicsMgr.CurrentColor = Color.Orange;
 
-			RectangleShape.DrawBySize(r.Position, r.HalfSize * 2, true);
-			CircleShape.Draw(c.Position, c.Radius, true);
+			c.Draw(true);
+			
+			var collided = SPhysics.GetAllCollisions(c, null);
 
-			if (collision.Collided)
+			GraphicsMgr.CurrentColor = Color.Blue;
+			
+			foreach(var cc in collided)
 			{
-				GraphicsMgr.CurrentColor = Color.Red;
-
-				LineShape.Draw(c.Position, c.Position + manifold.Direction * manifold.Depth);
+				LineShape.Draw(c.Position, cc.Collider.Position);
 			}
 			
 			GraphicsMgr.CurrentColor = Color.Beige * 0.3f;

@@ -53,7 +53,7 @@
     <Compile Include="Physics\Collisions\Intersections\RectangleRectangleIntersection.cs" />
     <Compile Include="Physics\Collisions\QuadTree.cs" />
     <Compile Include="Physics\Collisions\QuadTreeNode.cs" />
-    <Compile Include="Test\Player.cs" />
+    <Compile Include="Test\Body.cs" />
     <None Include="Content\Content.npl" />
     <None Include="Content\Graphics\Template.cstemplate" />
     <Compile Include="Game1.cs" />
