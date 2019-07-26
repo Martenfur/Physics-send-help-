@@ -66,7 +66,7 @@ namespace PSH.Test
 				new Vector2(physics.Collider.HalfSize.X * 2 - 2, 1)
 			);
 
-			if (SPhysics.GetCollision(collider, physics) == null)
+			//if (SPhysics.GetCollision(collider, physics) == null)
 			{
 				physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
 			}

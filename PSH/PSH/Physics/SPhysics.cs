@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Threading;
-
+using System.Runtime.CompilerServices;
 
 namespace PSH.Physics
 {
@@ -173,6 +173,7 @@ namespace PSH.Physics
 		/// <summary>
 		/// Caches all collisions to use them later.
 		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		void CacheAllCollisions(List<CachedCollision> collisions, QuadTree quad)
 		{
 			var leaves = quad.Leaves;
@@ -204,7 +205,7 @@ namespace PSH.Physics
 			}
 		}
 
-
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		void CacheCollision(List<CachedCollision> collisions, CPhysics a, CPhysics b)
 		{
 			var intersection = IntersectionSystem.CheckIntersection(a.Collider, b.Collider);
@@ -238,6 +239,7 @@ namespace PSH.Physics
 		/// <summary>
 		/// Applies forces on bodies to push them apart according to the manifold.
 		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		void ResolveCollision(CachedCollision collision)
 		{
 			// Looks a bit weird, but apparently, it works faster without vector operations.
@@ -272,6 +274,7 @@ namespace PSH.Physics
 		/// Due to float errors just assigning speeds is not enough.
 		/// Positional correction eliminates most of the ovelapping.
 		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		void PositionalCorrection(CachedCollision collision)
 		{
 			var correction = Math.Max(collision.Manifold.Depth - _positionCorrectionSlack, 0)
