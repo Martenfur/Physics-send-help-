@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine.ECS;
+using PSH.Physics.Collisions;
 using PSH.Physics.Collisions.Colliders;
+using System.Collections.Generic;
 
 namespace PSH.Physics
 {
@@ -30,8 +32,7 @@ namespace PSH.Physics
 
 		public ICollider Collider;
 
-
-		public bool HadCollision = false;
+		
 
 		/// <summary>
 		/// Ghost bodies don't collide with other ghost bodies.
@@ -49,8 +50,18 @@ namespace PSH.Physics
 		/// </summary>
 		public Vector2 DirectionalElasticity = Vector2.Zero;
 
-		public CPosition PositionComponent;
+		/// <summary>
+		/// Tells if there was a collision on this frame.
+		/// </summary>
+		public bool HadCollision = false;
 		
+		/// <summary>
+		/// A list of collisions for this frame.
+		/// </summary>
+		public List<Collision> Collisions;
+
+		public CPosition PositionComponent;
+
 		/// <summary>
 		/// Mass can only be assigned at the start.
 		/// 0 mass will make the body immovable.

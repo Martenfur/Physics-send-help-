@@ -22,7 +22,7 @@ namespace PSH.Test
 		{
 			ICollider collider;
 
-			if (true)//_r.Next(2) == 0)
+			if (_r.Next(2) == 0)
 			{
 				collider = new RectangleCollider(
 					position, 
@@ -56,6 +56,7 @@ namespace PSH.Test
 				// TODO: Change input arg to double.
 
 				physics.Speed = _speed * GameMath.DirectionToVector2((float)dir);
+				
 			}
 
 			var ddir = 90;//GameMath.Direction(position.Position, Input.MousePosition);

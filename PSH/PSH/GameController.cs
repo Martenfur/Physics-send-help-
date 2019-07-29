@@ -71,7 +71,33 @@ namespace PSH
 				+ ", iterations: " + SPhysics._iterations
 				+ ", time: " + SPhysics._stopwatch.ElapsedTicks
 				+ ", bodies: " + Scene.GetEntityListByComponent<CPhysics>().Count;
+
+
+
+			System.Collections.Generic.List<int> bodies = new System.Collections.Generic.List<int>();
+
+
+			// Unoptimized.
+			for(var i = 0; i < bodies.Count; i += 1)
+			{
+				for (var k = 0; k < bodies.Count; k += 1)
+				{
+					ResolveCollisions(bodies[i], bodies[k]);
+				}
+			}
+
+			// Optimized.
+			for (var i = 0; i < bodies.Count - 1; i += 1)
+			{
+				for (var k = i; k < bodies.Count; k += 1)
+				{
+					ResolveCollisions(bodies[i], bodies[k]);
+				}
+			}
+
+
 		}
+		void ResolveCollisions(int body1, int body2) {}
 
 		public override void Draw()
 		{
@@ -90,7 +116,7 @@ namespace PSH
 				LineShape.Draw(c.Position, cc.Collider.Position);
 			}
 			
-			GraphicsMgr.CurrentColor = Color.Beige * 0.3f;
+			GraphicsMgr.CurrentColor = Color.Red * 0.3f;
 			//SPhysics.Grid.Draw();
 
 		}

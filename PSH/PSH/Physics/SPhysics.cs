@@ -66,6 +66,8 @@ namespace PSH.Physics
 			var physics = (CPhysics)component;
 			var position = physics.Owner.GetComponent<CPosition>();
 			physics.PositionComponent = position;
+
+			physics.Collisions = new List<Collision>();
 		}
 
 		public override void FixedUpdate(List<Component> components)
@@ -81,6 +83,7 @@ namespace PSH.Physics
 
 				Grid.Add(physics);
 				physics.HadCollision = false;
+				physics.Collisions.Clear();
 			}
 			// Updating the grid.
 
@@ -154,6 +157,32 @@ namespace PSH.Physics
 			}
 			// Correcting positions.
 
+
+			// Adding info about collisions.
+			for (var l = 0; l < _cachedCollisions.Count; l += 1)
+			{
+				var list = _cachedCollisions[l];
+				for (var c = 0; c < list.Count; c += 1)
+				{
+					list[c].A.Collisions.Add(
+						new Collision
+						{ 
+							Other = list[c].B,
+							Manifold = list[c].Manifold
+						}
+					);
+					var otherManifold = list[c].Manifold;
+					otherManifold.Direction = -otherManifold.Direction;
+					list[c].B.Collisions.Add(
+						new Collision
+						{
+							Other = list[c].A,
+							Manifold = otherManifold
+						}
+					);
+				}
+			}
+			// Adding info about collisions.
 
 
 			// Updating positions.

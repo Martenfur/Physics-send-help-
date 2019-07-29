@@ -5,7 +5,8 @@ using PSH.Physics.Collisions.Intersections;
 namespace PSH.Physics
 {
 	/// <summary>
-	/// Information about collision.
+	/// Contains information about collision. 
+	/// Used to cache collisions for SPhysics.
 	/// </summary>
 	struct CachedCollision
 	{
@@ -15,6 +16,9 @@ namespace PSH.Physics
 		public IIntersection Intersection;
 		public Manifold Manifold;
 
+		/// <summary>
+		/// Sum of inverse masses.
+		/// </summary>
 		public float InvMassSum;
 
 		/// <summary>
