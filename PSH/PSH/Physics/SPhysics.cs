@@ -1,18 +1,15 @@
 ﻿using Microsoft.Xna.Framework;
-using Monofoxe.Engine;
 using Monofoxe.Engine.Drawing;
 using Monofoxe.Engine.ECS;
 using Monofoxe.Engine.Utils;
 using PSH.Physics.Collisions;
 using PSH.Physics.Collisions.Colliders;
-using PSH.Physics.Collisions.Intersections;
+using PSH.Physics.Collisions.SpatialHashing;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Runtime.CompilerServices;
-using PSH.Physics.Collisions.SpatialHashing;
+using System.Threading.Tasks;
 
 namespace PSH.Physics
 {
@@ -45,13 +42,12 @@ namespace PSH.Physics
 		/// This is where all the physics bodies are stored.
 		/// </summary>
 		public static CollisionGrid Grid = new CollisionGrid();
-		
+
 		/// <summary>
 		/// Number of collision resolution iterations.
 		/// </summary>
 		public static int _iterations;
-
-		bool _useParallel = true;
+		
 
 		public static Stopwatch _stopwatch = new Stopwatch();
 
@@ -59,7 +55,8 @@ namespace PSH.Physics
 		/// All the cached collisions are stored here.
 		/// List of lists is required for multithreading.
 		/// </summary>
-		List<List<CachedCollision>> _cachedCollisions = new List<List<CachedCollision>>();
+		BatchReturnPool<CachedCollision> _collisionsPool = new BatchReturnPool<CachedCollision>(1024);
+
 
 		public override void Create(Component component)
 		{
@@ -90,57 +87,27 @@ namespace PSH.Physics
 
 
 
-			// Clearing and resizing the cached collision lists.
-			var count = Grid.FilledCells.Count - _cachedCollisions.Count;
-			if (count < 0)
-			{
-				_cachedCollisions.RemoveRange(_cachedCollisions.Count + count, -count);
-			}
-			for (var i = 0; i < _cachedCollisions.Count; i += 1)
-			{	
-				_cachedCollisions[i].Clear();
-			}
-			for (var i = 0; i < count; i += 1)
-			{
-				_cachedCollisions.Add(new List<CachedCollision>());
-			}
-			// Clearing and resizing the cached collision lists.
+			_collisionsPool.ReturnAll();
 
 
 
 			// Getting all intersections and manifolds.
-			if (_useParallel)
+			for (var i = 0; i < Grid.FilledCells.Count; i += 1)
 			{
-				Parallel.ForEach(
-					Grid.FilledCells,
-					(quad, state, index) => {
-						CacheAllCollisions(_cachedCollisions[(int)index], quad);
-					}
-				);
-			}
-			else
-			{
-				for(var i = 0; i < Grid.FilledCells.Count; i += 1)
-				{
-					CacheAllCollisions(_cachedCollisions[i], Grid.FilledCells[i]);
-				}
+				CacheAllCollisions(Grid.FilledCells[i]);
 			}
 			// Getting all intersections and manifolds.
 
 
 
 			// Resolving collisions.
-			for(var i = 0; i < _resolveIterations; i += 1) 
+			for (var i = 0; i < _resolveIterations; i += 1)
 			{
 				// Doing collision resolving multiple times over and over again
 				// improves sim results.
-				for(var l = 0; l < _cachedCollisions.Count; l += 1)
+				for (var k = 0; k < _collisionsPool.TakenObjectsCount - 1; k += 1)
 				{
-					var list = _cachedCollisions[l];
-					for(var c = 0; c < list.Count; c += 1)
-					{
-						ResolveCollision(list[c]);
-					}
+					ResolveCollision(k);
 				}
 			}
 			// Resolving collisions.
@@ -148,17 +115,13 @@ namespace PSH.Physics
 
 
 			// Correcting positions.
-			for (var l = 0; l < _cachedCollisions.Count; l += 1)
+			for (var i = 0; i < _collisionsPool.TakenObjectsCount - 1; i += 1)
 			{
-				var list = _cachedCollisions[l];
-				for (var c = 0; c < list.Count; c += 1)
-				{
-					PositionalCorrection(list[c]);
-				}
+				PositionalCorrection(i);
 			}
 			// Correcting positions.
 
-
+			/*
 			// Adding info about collisions.
 			for (var l = 0; l < _cachedCollisions.Count; l += 1)
 			{
@@ -167,7 +130,7 @@ namespace PSH.Physics
 				{
 					list[c].A.Collisions.Add(
 						new Collision
-						{ 
+						{
 							Other = list[c].B,
 							Manifold = list[c].Manifold
 						}
@@ -184,13 +147,13 @@ namespace PSH.Physics
 				}
 			}
 			// Adding info about collisions.
-
+			*/
 
 			// Updating positions.
 			for (var i = 0; i < components.Count; i += 1)
 			{
 				var physics = (CPhysics)components[i];
-				
+
 				physics.Collider.Position += TimeKeeper.GlobalTime(physics.Speed);
 				physics.PositionComponent.Position = physics.Collider.Position;
 			}
@@ -204,7 +167,7 @@ namespace PSH.Physics
 		/// Caches all collisions to use them later.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		void CacheAllCollisions(List<CachedCollision> collisions, QuadTree quad)
+		void CacheAllCollisions(QuadTree quad)
 		{
 			var leaves = quad.Leaves;
 			for (var leafId = 0; leafId < leaves.Count; leafId += 1)
@@ -223,12 +186,12 @@ namespace PSH.Physics
 							continue;
 						}
 
-						CacheCollision(collisions, a, b);
+						CacheCollision(a, b);
 					}
 
 					for (var k = 0; k < leaf.ImmovableItemsCount; k += 1)
 					{
-						CacheCollision(collisions, a, leaf.GetImmovableItem(k));
+						CacheCollision(a, leaf.GetImmovableItem(k));
 					}
 
 				}
@@ -236,7 +199,7 @@ namespace PSH.Physics
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		void CacheCollision(List<CachedCollision> collisions, CPhysics a, CPhysics b)
+		void CacheCollision(CPhysics a, CPhysics b)
 		{
 			var intersection = IntersectionSystem.CheckIntersection(a.Collider, b.Collider);
 
@@ -244,24 +207,22 @@ namespace PSH.Physics
 			{
 				// Calculating some collision data right away, since it will be reused multiple times.
 				var manifold = intersection.GenerateManifold();
-				var collision = new CachedCollision
-				{
-					A = a,
-					B = b,
-					Intersection = intersection,
-					Manifold = manifold,
-					InvMassSum = a.InverseMass + b.InverseMass,
-					
-					ElasticityDirection = (1 + Math.Min(a.Elasticity, b.Elasticity)) * manifold.Direction 
-						// Secret sauce that makes platformer stacking work. Should point in the gravity direction.
-						+ Vector2.Min(a.DirectionalElasticity, b.DirectionalElasticity) * manifold.Direction,
-				};
+
+				var i = _collisionsPool.Take();
 
 
+				_collisionsPool[i].A = a;
+				_collisionsPool[i].B = b;
+				_collisionsPool[i].Intersection = intersection;
+				_collisionsPool[i].Manifold = manifold;
+				_collisionsPool[i].InvMassSum = a.InverseMass + b.InverseMass;
+
+				_collisionsPool[i].ElasticityDirection = (1 + Math.Min(a.Elasticity, b.Elasticity)) * manifold.Direction
+					// Secret sauce that makes platformer stacking work. Should point in the gravity direction.
+					+ Vector2.Min(a.DirectionalElasticity, b.DirectionalElasticity) * manifold.Direction;
+				
 				a.HadCollision = true;
 				b.HadCollision = true;
-
-				collisions.Add(collision);
 			}
 		}
 
@@ -270,30 +231,30 @@ namespace PSH.Physics
 		/// Applies forces on bodies to push them apart according to the manifold.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		void ResolveCollision(CachedCollision collision)
+		void ResolveCollision(int i)
 		{
 			// Looks a bit weird, but apparently, it works faster without vector operations.
 			// Yes, it's in a realm of microoptimizations, but this method runs A LOT of times per frame. 
 			_iterations += 1;
 
-			var a = collision.A;
-			var b = collision.B;
-			
-			var dotProduct = (a.Speed.X - b.Speed.X) * collision.Manifold.Direction.X 
-				+ (a.Speed.Y - b.Speed.Y) * collision.Manifold.Direction.Y;
-			
+			var a = _collisionsPool[i].A;
+			var b = _collisionsPool[i].B;
+
+			var dotProduct = (a.Speed.X - b.Speed.X) * _collisionsPool[i].Manifold.Direction.X
+				+ (a.Speed.Y - b.Speed.Y) * _collisionsPool[i].Manifold.Direction.Y;
+
 
 			// Do not push, if shapes are separating.
 			if (dotProduct < 0)
 			{
 				return;
 			}
-			
-			var dot = dotProduct / collision.InvMassSum;
 
-			var lx = collision.ElasticityDirection.X * dot;
-			var ly = collision.ElasticityDirection.Y * dot;
-			
+			var dot = dotProduct / _collisionsPool[i].InvMassSum;
+
+			var lx = _collisionsPool[i].ElasticityDirection.X * dot;
+			var ly = _collisionsPool[i].ElasticityDirection.Y * dot;
+
 			a.Speed = new Vector2(a.Speed.X - lx * a.InverseMass, a.Speed.Y - ly * a.InverseMass);
 			b.Speed = new Vector2(b.Speed.X + lx * b.InverseMass, b.Speed.Y + ly * b.InverseMass);
 		}
@@ -305,13 +266,13 @@ namespace PSH.Physics
 		/// Positional correction eliminates most of the ovelapping.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		void PositionalCorrection(CachedCollision collision)
+		void PositionalCorrection(int i)
 		{
-			var correction = Math.Max(collision.Manifold.Depth - _positionCorrectionSlack, 0)
-				/ collision.InvMassSum * _positionCorrection * collision.Manifold.Direction;
+			var correction = Math.Max(_collisionsPool[i].Manifold.Depth - _positionCorrectionSlack, 0)
+				/ _collisionsPool[i].InvMassSum * _positionCorrection * _collisionsPool[i].Manifold.Direction;
 
-			collision.A.Collider.Position -= correction * collision.A.InverseMass;
-			collision.B.Collider.Position += correction * collision.B.InverseMass;
+			_collisionsPool[i].A.Collider.Position -= correction * _collisionsPool[i].A.InverseMass;
+			_collisionsPool[i].B.Collider.Position += correction * _collisionsPool[i].B.InverseMass;
 		}
 
 
@@ -351,12 +312,12 @@ namespace PSH.Physics
 			var cells = Grid.GetFilledCellsInRange(topLeft, bottomRight);
 			var leaves = new List<QuadTreeNode>();
 
-			for(var i = 0; i < cells.Count; i += 1)
+			for (var i = 0; i < cells.Count; i += 1)
 			{
 				cells[i].GetLeavesInRange(leaves, topLeft, bottomRight);
 			}
 
-			for(var i = 0; i < leaves.Count; i += 1)
+			for (var i = 0; i < leaves.Count; i += 1)
 			{
 				for (var k = 0; k < leaves[i].ItemsCount; k += 1)
 				{

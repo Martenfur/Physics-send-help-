@@ -54,7 +54,7 @@
     <Compile Include="Physics\Collisions\Intersections\RectangleRectangleIntersection.cs" />
     <Compile Include="Physics\Collisions\SpatialHashing\QuadTree.cs" />
     <Compile Include="Physics\Collisions\SpatialHashing\QuadTreeNode.cs" />
-    <Compile Include="Physics\OneWayPool.cs" />
+    <Compile Include="Physics\BatchReturnPool.cs" />
     <Compile Include="Test\Body.cs" />
     <None Include="Content\Content.npl" />
     <None Include="Content\Graphics\Template.cstemplate" />
