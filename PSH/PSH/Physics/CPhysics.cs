@@ -49,6 +49,7 @@ namespace PSH.Physics
 		/// Good for platformers.
 		/// </summary>
 		public Vector2 DirectionalElasticity = Vector2.Zero;
+		// TODO: Probably remove?
 
 		/// <summary>
 		/// Tells if there was a collision on this frame.

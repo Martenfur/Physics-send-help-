@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 namespace PSH.Physics
 {
@@ -36,7 +35,7 @@ namespace PSH.Physics
 		/// Bigger value = more accurate simulation, but also bigger performance hit.
 		/// Recommended range: 1-20.
 		/// </summary>
-		private int _resolveIterations = 10;
+		private int _resolveIterations = 1;
 
 		/// <summary>
 		/// This is where all the physics bodies are stored.

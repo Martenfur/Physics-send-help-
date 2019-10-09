@@ -53,8 +53,7 @@ namespace PSH.Test
 				var position = GetComponent<CPosition>();
 
 				var dir = GameMath.Direction(position.Position, Input.MousePosition);
-				// TODO: Change input arg to double.
-
+				
 				physics.Speed = _speed * GameMath.DirectionToVector2((float)dir);
 				
 			}
