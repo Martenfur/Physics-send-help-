@@ -36,7 +36,7 @@ namespace PSH.Physics
 		/// Bigger value = more accurate simulation, but also bigger performance hit.
 		/// Recommended range: 1-20.
 		/// </summary>
-		private int _resolveIterations = 20;
+		private int _resolveIterations = 10;
 
 		/// <summary>
 		/// This is where all the physics bodies are stored.

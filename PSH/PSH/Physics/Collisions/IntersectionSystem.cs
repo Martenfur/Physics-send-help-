@@ -56,9 +56,9 @@ namespace PSH.Physics.Collisions
 
 
 
-			_circleCircleIntersectionPool = new BatchReturnPool<CircleCircleIntersection>(1024 * 64);
-			_rectangleCircleIntersectionPool = new BatchReturnPool<RectangleCircleIntersection>(1024 * 64);
-			_rectangleRectangleIntersectionPool = new BatchReturnPool<RectangleRectangleIntersection>(1024 * 64);
+			_circleCircleIntersectionPool = new BatchReturnPool<CircleCircleIntersection>(1024);
+			_rectangleCircleIntersectionPool = new BatchReturnPool<RectangleCircleIntersection>(1024);
+			_rectangleRectangleIntersectionPool = new BatchReturnPool<RectangleRectangleIntersection>(1024);
 		}
 
 		public static void Update()
