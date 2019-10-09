@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.Portable" Version="3.7.1.189" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Monofoxe.Engine">
+      <HintPath>..\PSH\References\Monofoxe.Engine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

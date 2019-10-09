@@ -37,16 +37,8 @@ namespace PSH
 			IntersectionSystem.Init();
 
 			CircleShape.CircleVerticesCount = 16;
-			
-			var pool = new BatchReturnPool<Vector2>(100);
 
-			for(var i = 0; i < 101; i += 1)
-			{
-				var p = pool.Take();
-			
-				pool[p].X = 64;
-			}
-			
+			Text.CurrentFont = Resources.Fonts.Arial;
 			
 		}
 
