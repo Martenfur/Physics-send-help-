@@ -63,20 +63,46 @@ namespace PSH.Physics.Collisions.SpatialHashing
 
 		QuadTree _owner;
 
-		public QuadTreeNode(QuadTree owner, Vector2 position, Vector2 size, int depth)
+		private bool _reserved;
+
+		public QuadTreeNode(QuadTree owner, Vector2 position, Vector2 size, int depth, bool reserved = false)
 		{
 			Position = position;
 			Size = size;
 			_depth = depth;
 			_owner = owner;
+			_reserved = reserved;
+			
+			if (!_reserved)
+			{
+				_owner.Leaves.Add(this);
+			}
 
-			_owner.Leaves.Add(this);
+			if (_depth < _depthLimit)
+			{
+				for (var i = 0; i < 4; i += 1)
+				{
+					_childNodes[i] = new QuadTreeNode(
+						_owner, 
+						Position + _rotation[i] * Size / 4f, 
+						Size / 2f, 
+						_depth + 1, 
+						true
+					);
+				}
+			}
 		}
 
 		public void Add(CPhysics item)
 		{
 			if (IsLeaf)
 			{
+				if (_reserved)
+				{
+					_reserved = false;
+					_owner.Leaves.Add(this);
+				}
+
 				if (item.Immovable)
 				{
 					_immovableItems.Add(item);
@@ -99,18 +125,27 @@ namespace PSH.Physics.Collisions.SpatialHashing
 
 		public void Clear()
 		{
-			for(var i = 0; i < 4; i += 1)
-			{
-				_childNodes[i] = null;
-			}
-			_items.Clear();
-			_immovableItems.Clear();
-			IsLeaf = true;
+			Reserve();
 
+			_reserved = false;
 			_owner.Leaves.Clear();
 			_owner.Leaves.Add(this);
 		}
 
+		private void Reserve()
+		{
+			if (!IsLeaf)
+			{
+				for (var i = 0; i < 4; i += 1)
+				{
+					_childNodes[i].Reserve();
+				}
+			}
+			_items.Clear();
+			_immovableItems.Clear();
+			IsLeaf = true;
+			_reserved = true;
+		}
 
 		public CPhysics GetItem(int i) => _items[i];
 
@@ -120,11 +155,6 @@ namespace PSH.Physics.Collisions.SpatialHashing
 		{
 			IsLeaf = false;
 			
-			for(var i = 0; i < 4; i += 1)
-			{
-				_childNodes[i] = new QuadTreeNode(_owner, Position + _rotation[i] * Size / 4f, Size / 2f, _depth + 1);
-			}
-
 			for(var i = 0; i < _items.Count; i += 1)
 			{
 				AddToChildren(_items[i]);
