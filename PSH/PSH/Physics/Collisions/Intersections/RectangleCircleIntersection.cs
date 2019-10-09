@@ -5,7 +5,7 @@ using System;
 
 namespace PSH.Physics.Collisions.Intersections
 {
-	public struct RectangleCircleIntersection : IIntersection
+	public class RectangleCircleIntersection : IIntersection
 	{
 		public bool Collided {get; private set;}
 		public ICollider A {get; private set;}
@@ -22,7 +22,7 @@ namespace PSH.Physics.Collisions.Intersections
 		float _normalLengthSquared;
 
 
-		public RectangleCircleIntersection(
+		public void Setup(
 			ICollider a, 
 			ICollider b,
 			bool collided,

@@ -18,7 +18,7 @@ namespace PSH.Physics.Collisions.SpatialHashing
 
 		public int Count {get; private set;}
 		
-
+		// TODO: Fix collision glitches.
 		public QuadTree(Vector2 position, Vector2 size)
 		{
 			Position = position;

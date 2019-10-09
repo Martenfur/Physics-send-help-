@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine.Drawing;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 
 namespace PSH.Physics.Collisions.SpatialHashing
 {

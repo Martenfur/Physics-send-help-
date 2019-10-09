@@ -3,7 +3,7 @@ using Monofoxe.Engine.Drawing;
 
 namespace PSH.Physics.Collisions.Colliders
 {
-	public struct RectangleCollider : ICollider
+	public class RectangleCollider : ICollider
 	{
 		public ColliderType ColliderType => ColliderType.Rectangle;
 		public Vector2 Position { get; set; }

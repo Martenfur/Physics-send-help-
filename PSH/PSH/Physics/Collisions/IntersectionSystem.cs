@@ -20,6 +20,11 @@ namespace PSH.Physics.Collisions
 
 		private const int _intersectionMatrixSize = 2;
 
+		private static BatchReturnPool<CircleCircleIntersection> _circleCircleIntersectionPool;
+		private static BatchReturnPool<RectangleCircleIntersection> _rectangleCircleIntersectionPool;
+		private static BatchReturnPool<RectangleRectangleIntersection> _rectangleRectangleIntersectionPool;
+
+
 		public static void Init()
 		{
 			/*
@@ -48,8 +53,21 @@ namespace PSH.Physics.Collisions
 				(int)ColliderType.Rectangle,
 				(int)ColliderType.Circle
 			] = RectangleCircle;
-			
+
+
+
+			_circleCircleIntersectionPool = new BatchReturnPool<CircleCircleIntersection>(1024 * 64);
+			_rectangleCircleIntersectionPool = new BatchReturnPool<RectangleCircleIntersection>(1024 * 64);
+			_rectangleRectangleIntersectionPool = new BatchReturnPool<RectangleRectangleIntersection>(1024 * 64);
 		}
+
+		public static void Update()
+		{
+			_circleCircleIntersectionPool.ReturnAll();
+			_rectangleCircleIntersectionPool.ReturnAll();
+			_rectangleRectangleIntersectionPool.ReturnAll();
+		}
+
 
 		/// <summary>
 		/// Checks if two colliders intersect.
@@ -81,7 +99,7 @@ namespace PSH.Physics.Collisions
 			return _intersectionMatrix[id1, id2](collider1, collider2, false);
 		}
 
-		
+
 
 		static IIntersection RectangleRectangle(ICollider a, ICollider b, bool flipNormal)
 		{
@@ -89,7 +107,7 @@ namespace PSH.Physics.Collisions
 			var r2 = (RectangleCollider)b;
 
 			var delta = r2.Position - r1.Position;
-			
+
 			var overlapX = r1.HalfSize.X + r2.HalfSize.X - Math.Abs(delta.X);
 
 			if (overlapX > 0)
@@ -98,36 +116,39 @@ namespace PSH.Physics.Collisions
 
 				if (overlapY > 0)
 				{
-					var collision = new RectangleRectangleIntersection(
-						r1, 
-						r2, 
-						true, 
-						delta, 
+					var collision = _rectangleRectangleIntersectionPool[_rectangleRectangleIntersectionPool.Take()];
+					collision.Setup(
+						r1,
+						r2,
+						true,
+						delta,
 						new Vector2(overlapX, overlapY)
 					);
-					
+
 					return collision;
 				}
 
 			}
 
-			return new RectangleRectangleIntersection(
+			var collision1 = _rectangleRectangleIntersectionPool[_rectangleRectangleIntersectionPool.Take()];
+			collision1.Setup(
 				r1,
 				r2,
 				false,
 				Vector2.Zero,
 				Vector2.Zero
-			); 
+			);
+			return collision1;
 		}
 
-		
+
 		static IIntersection CircleCircle(ICollider a, ICollider b, bool flipNormal)
 		{
 			var c1 = (CircleCollider)a;
 			var c2 = (CircleCollider)b;
 
 			var delta = c2.Position - c1.Position;
-			
+
 			var rSumSqr = c1.Radius + c2.Radius;
 			rSumSqr *= rSumSqr;
 
@@ -135,18 +156,22 @@ namespace PSH.Physics.Collisions
 
 			if (lengthSqr > rSumSqr) // No collision.
 			{
-				return new CircleCircleIntersection(c1, c2, false, Vector2.Zero, 0, 0);
+				var collision = _circleCircleIntersectionPool[_circleCircleIntersectionPool.Take()];
+				collision.Setup(c1, c2, false, Vector2.Zero, 0, 0);
+				return collision;
 			}
-
-			return new CircleCircleIntersection(c1, c2, true,	delta, lengthSqr, rSumSqr);
+;
+			var collision1 = _circleCircleIntersectionPool[_circleCircleIntersectionPool.Take()];
+			collision1.Setup(c1, c2, true, delta, lengthSqr, rSumSqr);
+			return collision1;
 		}
-		
+
 
 		static IIntersection RectangleCircle(ICollider a, ICollider b, bool flipNormal)
 		{
 			var r = (RectangleCollider)a;
 			var c = (CircleCollider)b;
-			
+
 			var delta = c.Position - r.Position;
 
 
@@ -156,11 +181,11 @@ namespace PSH.Physics.Collisions
 			);
 
 			var inside = false;
-			
+
 			if (delta == closestCorner)
 			{
 				inside = true;
-				
+
 				if (r.HalfSize.X - Math.Abs(delta.X) < r.HalfSize.Y - Math.Abs(delta.Y))
 				{
 					if (closestCorner.X > 0)
@@ -195,20 +220,25 @@ namespace PSH.Physics.Collisions
 				normal = -delta / delta.Length() * c.Radius / 2;
 				d = c.Radius * c.Radius;
 			}
-			
+
 			if (d > c.Radius * c.Radius && !inside)
 			{
-				return new RectangleCircleIntersection(r, c, false, Vector2.Zero, Vector2.Zero, false, Vector2.Zero, 0);
+				var collision = _rectangleCircleIntersectionPool[_rectangleCircleIntersectionPool.Take()];
+				collision.Setup(r, c, false, Vector2.Zero, Vector2.Zero, false, Vector2.Zero, 0);
+				return collision;
 			}
 
-			
+
 			if (flipNormal)
 			{
 				normal *= -1;
 			}
-			return new RectangleCircleIntersection(r, c, true, delta, closestCorner, inside, normal, d);
+
+			var collision1 = _rectangleCircleIntersectionPool[_rectangleCircleIntersectionPool.Take()];
+			collision1.Setup(r, c, true, delta, closestCorner, inside, normal, d);
+			return collision1;
 		}
-		
+
 
 
 

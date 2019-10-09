@@ -3,7 +3,7 @@ using PSH.Physics.Collisions.Colliders;
 
 namespace PSH.Physics.Collisions.Intersections
 {
-	public struct RectangleRectangleIntersection : IIntersection
+	public class RectangleRectangleIntersection : IIntersection
 	{
 		public bool Collided {get; private set;}
 		public ICollider A {get; private set;}
@@ -13,7 +13,7 @@ namespace PSH.Physics.Collisions.Intersections
 
 		Vector2 _delta;
 
-		public RectangleRectangleIntersection(
+		public void Setup(
 			ICollider a, 
 			ICollider b,
 			bool collided, 

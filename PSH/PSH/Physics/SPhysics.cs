@@ -86,7 +86,7 @@ namespace PSH.Physics
 			// Updating the grid.
 
 
-
+			IntersectionSystem.Update();
 			_collisionsPool.ReturnAll();
 
 

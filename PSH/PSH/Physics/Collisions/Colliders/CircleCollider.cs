@@ -4,7 +4,7 @@ using Monofoxe.Engine.Drawing;
 
 namespace PSH.Physics.Collisions.Colliders
 {
-	public struct CircleCollider : ICollider
+	public class CircleCollider : ICollider
 	{
 		public ColliderType ColliderType => ColliderType.Circle;
 		public Vector2 Position { get; set; }
