@@ -54,7 +54,7 @@ namespace PSH.Test
 
 				var dir = GameMath.Direction(position.Position, Input.MousePosition);
 				
-				physics.Speed = _speed * GameMath.DirectionToVector2((float)dir);
+				physics.Speed = _speed * GameMath.DirectionToVector2(dir);
 				
 			}
 

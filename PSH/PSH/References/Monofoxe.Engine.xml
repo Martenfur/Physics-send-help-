@@ -1203,7 +1203,7 @@
         </member>
         <member name="M:Monofoxe.Engine.ECS.SystemMgr.InitSystemPool">
             <summary>
-            Creates an instance of each ISystem implementing class.
+            Creates an instance of each class derived from BaseSystem.
             </summary>
         </member>
         <member name="T:Monofoxe.Engine.Utils.Animation">
@@ -1254,7 +1254,7 @@
             If true, Progress will go from 1 to 0 insteasd of 0 to 1.
             </summary>
         </member>
-        <member name="F:Monofoxe.Engine.Utils.Animation.AnimationEndEvent">
+        <member name="E:Monofoxe.Engine.Utils.Animation.AnimationEndEvent">
             <summary>
             Gets called, when animation ends or loops.
             Use this for more fine control over the animation.
@@ -1449,7 +1449,7 @@
             Tells how much time is left in seconds.
             </summary>
         </member>
-        <member name="F:Monofoxe.Engine.Utils.Alarm.TriggerAction">
+        <member name="E:Monofoxe.Engine.Utils.Alarm.TriggerEvent">
             <summary>
             Gets called in an update, if alarm is triggered. 
             </summary>
@@ -1505,7 +1505,7 @@
             Calculates direction between two points in radians.
             </summary>
         </member>
-        <member name="M:Monofoxe.Engine.Utils.GameMath.DirectionToVector2(System.Single)">
+        <member name="M:Monofoxe.Engine.Utils.GameMath.DirectionToVector2(System.Double)">
             <summary>
             Converts direction measured in degrees to unit Vector2.
             </summary>
@@ -2700,9 +2700,9 @@
             Resizes the view.
             </summary>
         </member>
-        <member name="M:Monofoxe.Engine.Cameras.Camera.Destroy">
+        <member name="M:Monofoxe.Engine.Cameras.Camera.Dispose">
             <summary>
-            Removes camera from draw controller list and disposes surface.
+            Removes camera from draw controller list and disposes the surface.
             </summary>
         </member>
         <member name="M:Monofoxe.Engine.Cameras.Camera.UpdateTransformMatrix">
