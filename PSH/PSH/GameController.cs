@@ -103,7 +103,7 @@ namespace PSH
 			}
 			
 			GraphicsMgr.CurrentColor = Color.Red * 0.3f;
-			//SPhysics.Grid.Draw();
+			SPhysics.Grid.Draw();
 
 		}
 

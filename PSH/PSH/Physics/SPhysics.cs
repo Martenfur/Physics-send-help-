@@ -105,7 +105,7 @@ namespace PSH.Physics
 			{
 				// Doing collision resolving multiple times over and over again
 				// improves sim results.
-				for (var k = 0; k < _collisionsPool.TakenObjectsCount - 1; k += 1)
+				for (var k = 0; k < _collisionsPool.TakenObjectsCount; k += 1)
 				{
 					ResolveCollision(k);
 				}
@@ -115,7 +115,7 @@ namespace PSH.Physics
 
 
 			// Correcting positions.
-			for (var i = 0; i < _collisionsPool.TakenObjectsCount - 1; i += 1)
+			for (var i = 0; i < _collisionsPool.TakenObjectsCount; i += 1)
 			{
 				PositionalCorrection(i);
 			}
