@@ -10,6 +10,7 @@ using PSH.Physics.Collisions;
 using PSH.Physics.Collisions.Colliders;
 using PSH.Test;
 using Monofoxe.Engine.Utils;
+using System.Diagnostics;
 
 namespace PSH
 {
@@ -36,6 +37,16 @@ namespace PSH
 			IntersectionSystem.Init();
 
 			CircleShape.CircleVerticesCount = 16;
+			
+			var pool = new BatchReturnPool<Vector2>(100);
+
+			for(var i = 0; i < 101; i += 1)
+			{
+				var p = pool.Take();
+			
+				pool[p].X = 64;
+			}
+			
 			
 		}
 
