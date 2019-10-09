@@ -39,14 +39,14 @@ namespace PSH.Physics
 			{
 				DoublePoolSize();
 			}
-			return _pointer;
+			return _pointer - 1;
 		}
 
 
 		/// <summary>
 		/// Returns ALL previously taken objects back to the pool.
 		/// </summary>
-		public int Reset()
+		public int ReturnAll()
 		{
 			_pointer = 0;
 			return _pointer;
