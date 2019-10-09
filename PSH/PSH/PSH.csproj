@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="Physics\CachedCollision.cs" />
     <Compile Include="Physics\Collisions\Collision.cs" />
-    <Compile Include="Physics\Collisions\CollisionGrid.cs" />
+    <Compile Include="Physics\Collisions\SpatialHashing\CollisionGrid.cs" />
     <Compile Include="Physics\Collisions\Intersections\IIntersection.cs" />
     <Compile Include="Physics\Collisions\Manifold.cs" />
     <Compile Include="Physics\Collisions\Colliders\CircleCollider.cs" />
@@ -52,8 +52,8 @@
     <Compile Include="Physics\Collisions\Intersections\NoIntersection.cs" />
     <Compile Include="Physics\Collisions\Intersections\RectangleCircleIntersection.cs" />
     <Compile Include="Physics\Collisions\Intersections\RectangleRectangleIntersection.cs" />
-    <Compile Include="Physics\Collisions\QuadTree.cs" />
-    <Compile Include="Physics\Collisions\QuadTreeNode.cs" />
+    <Compile Include="Physics\Collisions\SpatialHashing\QuadTree.cs" />
+    <Compile Include="Physics\Collisions\SpatialHashing\QuadTreeNode.cs" />
     <Compile Include="Test\Body.cs" />
     <None Include="Content\Content.npl" />
     <None Include="Content\Graphics\Template.cstemplate" />

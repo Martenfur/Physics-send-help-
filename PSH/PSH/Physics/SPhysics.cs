@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Runtime.CompilerServices;
+using PSH.Physics.Collisions.SpatialHashing;
 
 namespace PSH.Physics
 {

@@ -2,7 +2,7 @@
 using Monofoxe.Engine.Drawing;
 using System.Collections.Generic;
 
-namespace PSH.Physics.Collisions
+namespace PSH.Physics.Collisions.SpatialHashing
 {
 	public class QuadTreeNode
 	{

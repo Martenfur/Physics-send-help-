@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 
-namespace PSH.Physics.Collisions
+namespace PSH.Physics.Collisions.SpatialHashing
 {
 	public class QuadTree
 	{
