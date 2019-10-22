@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace PSH.Physics.Collisions.Colliders
+namespace PSH.Collisions.Colliders
 {
 	/// <summary>
 	/// Colliders describe some shape or a structure which 

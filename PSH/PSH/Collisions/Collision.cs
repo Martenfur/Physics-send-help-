@@ -1,6 +1,6 @@
-﻿using PSH.Physics.Collisions.Intersections;
+﻿using PSH.Collisions.Intersections;
 
-namespace PSH.Physics.Collisions
+namespace PSH.Collisions
 {
 	/// <summary>
 	/// Contains information about collision.

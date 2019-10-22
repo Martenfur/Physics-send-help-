@@ -1,10 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine.ECS;
-using PSH.Physics.Collisions;
-using PSH.Physics.Collisions.Colliders;
+using PSH.Collisions;
+using PSH.Collisions.Colliders;
 using System.Collections.Generic;
 
-namespace PSH.Physics
+namespace PSH
 {
 	public class CPhysics : Component
 	{

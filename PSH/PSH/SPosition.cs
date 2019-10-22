@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace PSH.Physics
+namespace PSH
 {
 	public class SPosition : BaseSystem
 	{

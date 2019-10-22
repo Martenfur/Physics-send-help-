@@ -1,10 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
-using PSH.Physics.Collisions.Colliders;
-using PSH.Physics.Collisions.Intersections;
+using PSH.Collisions.Colliders;
+using PSH.Collisions.Intersections;
 using System;
 
 
-namespace PSH.Physics.Collisions
+namespace PSH.Collisions
 {
 	public delegate IIntersection IntersectionDelegate(ICollider a, ICollider b, bool flipNormal);
 

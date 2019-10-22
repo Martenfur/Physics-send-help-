@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine.ECS;
 
-namespace PSH.Physics
+namespace PSH
 {
 	public class CPosition : Component
 	{

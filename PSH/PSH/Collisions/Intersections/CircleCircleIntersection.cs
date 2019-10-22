@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
-using PSH.Physics.Collisions.Colliders;
+using PSH.Collisions.Colliders;
 using System;
 
-namespace PSH.Physics.Collisions.Intersections
+namespace PSH.Collisions.Intersections
 {
 	public class CircleCircleIntersection : IIntersection
 	{

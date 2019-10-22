@@ -2,7 +2,7 @@
 using Monofoxe.Engine.Drawing;
 using System.Collections.Generic;
 
-namespace PSH.Physics.Collisions.SpatialHashing
+namespace PSH.Collisions.SpatialHashing
 {
 	public class CollisionGrid
 	{

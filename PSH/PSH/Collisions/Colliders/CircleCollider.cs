@@ -2,7 +2,7 @@
 using System;
 using Monofoxe.Engine.Drawing;
 
-namespace PSH.Physics.Collisions.Colliders
+namespace PSH.Collisions.Colliders
 {
 	public class CircleCollider : ICollider
 	{

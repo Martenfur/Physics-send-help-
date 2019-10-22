@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
-using PSH.Physics.Collisions.Colliders;
+using PSH.Collisions.Colliders;
 
-namespace PSH.Physics.Collisions.Intersections
+namespace PSH.Collisions.Intersections
 {
 	public class RectangleRectangleIntersection : IIntersection
 	{

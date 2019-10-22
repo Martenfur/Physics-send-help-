@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PSH.Physics
+namespace PSH
 {
 	/// <summary>
 	/// Object pool, but you can only take the objects one by one.

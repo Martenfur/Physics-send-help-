@@ -2,15 +2,15 @@
 using Monofoxe.Engine.Drawing;
 using Monofoxe.Engine.ECS;
 using Monofoxe.Engine.Utils;
-using PSH.Physics.Collisions;
-using PSH.Physics.Collisions.Colliders;
-using PSH.Physics.Collisions.SpatialHashing;
+using PSH.Collisions;
+using PSH.Collisions.Colliders;
+using PSH.Collisions.SpatialHashing;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace PSH.Physics
+namespace PSH
 {
 	public class SPhysics : BaseSystem
 	{

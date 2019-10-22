@@ -3,8 +3,8 @@ using Monofoxe.Engine;
 using Monofoxe.Engine.ECS;
 using Monofoxe.Engine.SceneSystem;
 using Monofoxe.Engine.Utils;
-using PSH.Physics;
-using PSH.Physics.Collisions.Colliders;
+using PSH;
+using PSH.Collisions.Colliders;
 
 
 namespace PSH.Test

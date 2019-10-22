@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Monofoxe.Engine.Drawing;
 
-namespace PSH.Physics.Collisions.Colliders
+namespace PSH.Collisions.Colliders
 {
 	public class RectangleCollider : ICollider
 	{

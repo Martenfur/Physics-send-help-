@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace PSH.Physics.Collisions
+namespace PSH.Collisions
 {
 	/// <summary>
 	/// Collision manifold. 

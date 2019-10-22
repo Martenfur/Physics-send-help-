@@ -1,6 +1,6 @@
-﻿using PSH.Physics.Collisions.Colliders;
+﻿using PSH.Collisions.Colliders;
 
-namespace PSH.Physics.Collisions.Intersections
+namespace PSH.Collisions.Intersections
 {
 	public interface IIntersection
 	{

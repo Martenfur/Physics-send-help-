@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
-using PSH.Physics.Collisions;
-using PSH.Physics.Collisions.Intersections;
+using PSH.Collisions;
+using PSH.Collisions.Intersections;
 
-namespace PSH.Physics
+namespace PSH
 {
 	/// <summary>
 	/// Contains information about collision. 
