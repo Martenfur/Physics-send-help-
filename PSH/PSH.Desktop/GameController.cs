@@ -11,6 +11,7 @@ using PSH.Physics.Collisions.Colliders;
 using PSH.Test;
 using Monofoxe.Engine.Utils;
 using System.Diagnostics;
+using Monofoxe.Engine.Resources;
 
 namespace PSH
 {
@@ -38,7 +39,7 @@ namespace PSH
 
 			CircleShape.CircleVerticesCount = 16;
 
-			Text.CurrentFont = Resources.Fonts.Arial;
+			Text.CurrentFont = ResourceHub.GetResource<IFont>("Fonts", "Arial");
 			
 		}
 

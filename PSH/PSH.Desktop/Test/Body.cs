@@ -52,13 +52,13 @@ namespace PSH.Test
 			{
 				var position = GetComponent<CPosition>();
 
-				var dir = GameMath.Direction(position.Position, Input.MousePosition);
+				var dir = new Angle(position.Position, Input.MousePosition);
 				
-				physics.Speed = _speed * GameMath.DirectionToVector2(dir);
+				physics.Speed = _speed * dir.ToVector2();
 				
 			}
 
-			var ddir = 90;//GameMath.Direction(position.Position, Input.MousePosition);
+			var ddir = Angle.Down;
 			
 			
 			var collider = new RectangleCollider(
@@ -68,7 +68,7 @@ namespace PSH.Test
 
 			//if (SPhysics.GetCollision(collider, physics) == null)
 			{
-				physics.Speed += 10 * GameMath.DirectionToVector2((float)ddir) * Vector2.UnitY;
+				physics.Speed += 10 * ddir.ToVector2() * Vector2.UnitY;
 			}
 			
 			if (physics.Speed.Y > _maxFallSpeed)

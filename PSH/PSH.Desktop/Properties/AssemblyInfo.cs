@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PSH")]
-[assembly: AssemblyProduct("PSH")]
+[assembly: AssemblyTitle("PSH.Desktop")]
+[assembly: AssemblyProduct("PSH.Desktop")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyCompany("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("4b2f4099-43fb-4cf6-95bd-c0b997a099cb")]
+[assembly: Guid("e1e2b4c8-0037-4d7f-9bcf-ea4a7ec80a78")]
 
 // Version information for an assembly consists of the following four values:
 //

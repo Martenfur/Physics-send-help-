@@ -3,6 +3,7 @@ using Monofoxe.Engine;
 using Monofoxe.Tiled;
 using Monofoxe.Engine.Drawing;
 using Resources;
+using Monofoxe.Engine.Resources;
 
 namespace PSH
 {
@@ -39,10 +40,11 @@ namespace PSH
 		{
 			GraphicsMgr.Init(GraphicsDevice);
 			
-			Resources.Sprites.Default.Load();	
-			Fonts.Load();
-			Effects.Load();
-			Maps.Load();
+			new Resources.Sprites.Default();	
+			new Fonts();
+			new Effects();
+			new Maps();
+
 		}
 
 		/// <summary>
@@ -51,6 +53,7 @@ namespace PSH
 		/// </summary>
 		protected override void UnloadContent()
 		{
+			ResourceHub.UnloadAll();
 		}
 
 		/// <summary>
