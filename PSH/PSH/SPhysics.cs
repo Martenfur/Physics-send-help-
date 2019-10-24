@@ -56,6 +56,7 @@ namespace PSH
 		/// </summary>
 		BatchReturnPool<CachedCollision> _collisionsPool = new BatchReturnPool<CachedCollision>(1024);
 
+		public static TimeKeeper TimeKeeper = TimeKeeper.Global;
 
 		public override void Create(Component component)
 		{
@@ -153,7 +154,7 @@ namespace PSH
 			{
 				var physics = (CPhysics)components[i];
 
-				physics.Collider.Position += TimeKeeper.GlobalTime(physics.Speed);
+				physics.Collider.Position += TimeKeeper.Time(physics.Speed);
 				physics.PositionComponent.Position = physics.Collider.Position;
 			}
 			// Updating positions.
